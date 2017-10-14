@@ -1,0 +1,20 @@
+SubDir TOP kit ;
+
+MySubDir TOP kit ;
+
+local NAMES =
+	kit #basic kit stuff
+	kit-SDL2 #kit SDL2 backend
+	#resource loading:
+	Load
+	#GL wrappers:
+	GLProgram
+	;
+
+if $(OS) = NT {
+	NAMES += gl_shims ;
+}
+
+MyObjects $(NAMES:S=.cpp) ;
+
+KIT_OBJECTS = $(NAMES:D=$(LOCATE_TARGET):S=$(SUFOBJ)) ;
