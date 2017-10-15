@@ -10,6 +10,8 @@
 #include <iostream>
 #include <vector>
 
+namespace kit {
+
 MeshBuffer::MeshBuffer(std::string const &filename) {
 	std::ifstream file(filename, std::ios::binary);
 
@@ -108,4 +110,6 @@ const MeshBuffer::Mesh &MeshBuffer::lookup(std::string const &name) const {
 		throw std::runtime_error("Looking up mesh that doesn't exist.");
 	}
 	return f->second;
+}
+
 }

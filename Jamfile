@@ -5,8 +5,10 @@ MySubDir TOP kit ;
 local NAMES =
 	kit #basic kit stuff
 	kit-SDL2 #kit SDL2 backend
+	Button
 	#resource loading:
 	Load
+	MeshBuffer
 	#GL wrappers:
 	GLProgram
 	;

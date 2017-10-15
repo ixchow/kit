@@ -1,6 +1,8 @@
 #include "kit.hpp"
 #include "gl.hpp"
 
+#include "Button.hpp"
+
 #include <SDL.h>
 
 #include <iostream>
@@ -103,6 +105,7 @@ int main(int argc, char **argv) {
 
 		{
 			static SDL_Event evt;
+			kit::Button::clear_events();
 			while (SDL_PollEvent(&evt) == 1 && mode) {
 				if (evt.type == SDL_WINDOWEVENT && evt.window.event == SDL_WINDOWEVENT_ENTER) {
 					std::cout << "Mouse Enter." << std::endl; //DEBUG
@@ -150,6 +153,11 @@ int main(int argc, char **argv) {
 						| ((evt.button.state & SDL_BUTTON(SDL_BUTTON_RIGHT)) ? kit::ButtonRight : 0)
 					;
 					kit::dispatch_pointer_action(MouseID, (evt.type == SDL_MOUSEBUTTONDOWN ? kit::PointerDown : kit::PointerUp), new_state);
+				}
+				if (evt.type == SDL_KEYDOWN || evt.type == SDL_KEYUP) {
+					if (evt.key.repeat == 0) {
+						kit::Button::handle_event(evt);
+					}
 				}
 				//exit not-so-gracefully on a "quit" message:
 				if (evt.type == SDL_QUIT) {

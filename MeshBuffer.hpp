@@ -2,11 +2,12 @@
 
 #include "GLBuffer.hpp"
 
-#include "GL.hpp"
 #include <map>
 
 //"MeshBuffer" holds a collection of meshes loaded from a file
-// (note that meshes in a single collection will share a vao)
+// (note that meshes in a single collection will share a buffer)
+
+namespace kit {
 
 struct MeshBuffer {
 	GLAttribPointer Position;
@@ -31,3 +32,5 @@ struct MeshBuffer {
 	//internals:
 	std::map< std::string, Mesh > meshes;
 };
+
+}
