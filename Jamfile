@@ -11,6 +11,8 @@ local NAMES =
 	MeshBuffer
 	#GL wrappers:
 	GLProgram
+	#path utils:
+	path
 	;
 
 if $(OS) = NT {
