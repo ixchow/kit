@@ -110,3 +110,11 @@ kit::BoneAnimation::BoneAnimation(std::string const &filename) {
 	}
 
 }
+
+const kit::BoneAnimation::Animation &kit::BoneAnimation::lookup(std::string const &name) const {
+	for (auto const &animation : animations) {
+		if (animation.name == name) return animation;
+	}
+	throw std::runtime_error("Animation with name '" + name + "' does not exist.");
+}
+
