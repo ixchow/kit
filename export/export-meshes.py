@@ -3,7 +3,7 @@
 #based on 'export-sprites.py' and 'glsprite.py' from TCHOW Rainbow; code used is released into the public domain.
 
 #Note: Script meant to be executed from within blender, as per:
-#blender --background --python export-meshes.py -- <infile.blend> <outfile.p[n][c][t]>
+#blender --background --python export-meshes.py -- <infile.blend> <L> <outfile.p[n][c][t]>
 
 import sys
 
@@ -12,12 +12,13 @@ for i in range(0,len(sys.argv)):
 	if sys.argv[i] == '--':
 		args = sys.argv[i+1:]
 
-if len(args) != 2:
-	print("\n\nUsage:\nblender --background --python export-meshes.py -- <infile.blend> <outfile.p[n][c][t]>\nExports the meshes referenced by all objects to a binary blob, indexed by the names of the objects that reference them.\n")
+if len(args) != 3:
+	print("\n\nUsage:\nblender --background --python export-meshes.py -- <infile.blend> <layer> <outfile.p[n][c][t]>\nExports the meshes referenced by all objects to a binary blob, indexed by the names of the objects that reference them.\n")
 	exit(1)
 
 infile = args[0]
-outfile = args[1]
+layer = int(args[1])
+outfile = args[2]
 
 class FileType:
 	def __init__(self, magic):
@@ -62,11 +63,11 @@ import argparse
 
 bpy.ops.wm.open_mainfile(filepath=infile)
 
-#names of objects whose meshes to write (not actually the names of the meshes):
-to_write = []
+#names of meshes to write:
+to_write = set()
 for obj in bpy.data.objects:
-	if obj.type == 'MESH':
-		to_write.append(obj.name)
+	if obj.layers[layer] and obj.type == 'MESH':
+		to_write.add(obj.data)
 
 #data contains vertex and normal data from the meshes:
 data = b''
@@ -78,13 +79,17 @@ strings = b''
 index = b''
 
 vertex_count = 0
-for name in to_write:
+for obj in bpy.data.objects:
+	if obj.data in to_write:
+		to_write.remove(obj.data)
+	else:
+		continue
+
+	mesh = obj.data
+	name = mesh.name
+
 	print("Writing '" + name + "'...")
 	bpy.ops.object.mode_set(mode='OBJECT') #get out of edit mode (just in case)
-	assert(name in bpy.data.objects)
-	obj = bpy.data.objects[name]
-
-	obj.data = obj.data.copy() #make mesh single user, just in case it is shared with another object the script needs to write later.
 
 	#make sure object is on a visible layer:
 	bpy.context.scene.layers = obj.layers
@@ -100,7 +105,6 @@ for name in to_write:
 	bpy.ops.object.mode_set(mode='OBJECT')
 
 	#compute normals (respecting face smoothing):
-	mesh = obj.data
 	mesh.calc_normals_split()
 
 	#record mesh name, start position and vertex count in the index:
@@ -151,9 +155,6 @@ for name in to_write:
 					data += struct.pack('ff', uv.x, uv.y)
 				else:
 					data += struct.pack('ff', 0, 0)
-
-			if filetype.texcoord:
-				pass
 	vertex_count += len(mesh.polygons) * 3
 
 #check that we wrote as much data as anticipated:

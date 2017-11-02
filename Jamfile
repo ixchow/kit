@@ -9,6 +9,7 @@ local NAMES =
 	#resource loading:
 	Load
 	MeshBuffer
+	BoneAnimation
 	#GL wrappers:
 	GLProgram
 	#path utils:

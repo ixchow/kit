@@ -51,7 +51,15 @@ struct GLVertexArray {
 					throw std::runtime_error("Trying to bind undefined pointer to active attribute.");
 				}
 				glBindBuffer(GL_ARRAY_BUFFER, lp.second.buffer);
-				glVertexAttribPointer(lp.first, lp.second.size, lp.second.type, lp.second.normalized, lp.second.stride, (GLbyte *)0 + lp.second.offset);
+				if (lp.second.interpretation == KIT_AS_INTEGER) {
+					glVertexAttribIPointer(lp.first, lp.second.size, lp.second.type, lp.second.stride, (GLbyte *)0 + lp.second.offset);
+				} else if (lp.second.interpretation == KIT_AS_DOUBLE) {
+					glVertexAttribLPointer(lp.first, lp.second.size, lp.second.type, lp.second.stride, (GLbyte *)0 + lp.second.offset);
+				} else {
+					glVertexAttribPointer(lp.first, lp.second.size, lp.second.type,
+						(lp.second.interpretation == KIT_NORMALIZED_AS_FLOAT ? GL_TRUE : GL_FALSE),
+						lp.second.stride, (GLbyte *)0 + lp.second.offset);
+				}
 				glEnableVertexAttribArray(lp.first);
 				glBindBuffer(GL_ARRAY_BUFFER, 0);
 			}
