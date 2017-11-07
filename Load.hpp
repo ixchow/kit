@@ -52,6 +52,7 @@ struct Load {
 
 	//Make a "Load< T >" behave like a "T const *":
 	explicit operator bool() { return value != nullptr; }
+	operator T const *() { return value; }
 	T const &operator*() { return *value; }
 	T const *operator->() { return value; }
 
