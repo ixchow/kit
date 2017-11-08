@@ -6,6 +6,7 @@
 #include <glm/gtx/quaternion.hpp>
 
 #include <map>
+#include <string>
 
 //"BoneAnimation" holds a mesh loaded from a file along with skin weights,
 // a heirarchy of bones and their bind info,

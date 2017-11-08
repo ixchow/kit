@@ -3,13 +3,15 @@
 #include <iostream>
 #include <vector>
 
-#ifdef _WIN32
+#if defined(_WIN32)
 #include <windows.h>
 #include <Knownfolders.h>
 #include <Shlobj.h>
 #include <direct.h>
 #include <io.h>
-#else
+#elif defined(__APPLE__)
+#include <mach-o/dyld.h>
+#elif defined(__linux__)
 #include <unistd.h>
 #include <sys/stat.h>
 #endif //WINDOWS
@@ -17,6 +19,10 @@
 
 //Linux version:
 std::string get_data_path() {
+	#if defined(_WIN32)
+	#error "No code written for Win32 yet -- should use GetModuleFileName()"
+	//See: https://stackoverflow.com/questions/1023306/finding-current-executables-path-without-proc-self-exe
+	#elif defined(__linux__)
 	//From: https://stackoverflow.com/questions/933850/how-do-i-find-the-location-of-the-executable-in-c
 	std::vector< char > buffer(1000);
 	while (1) {
@@ -29,6 +35,21 @@ std::string get_data_path() {
 		}
 		buffer.resize(buffer.size() + 4000);
 	}
+	#elif defined(__APPLE__)
+	//From: https://stackoverflow.com/questions/799679/programmatically-retrieving-the-absolute-path-of-an-os-x-command-line-app/1024933
+	uint32_t bufsize = 0;
+	std::vector< char > buffer;
+	_NSGetExecutablePath(&buffer[0], &bufsize);
+	buffer.resize(bufsize, '\0');
+	bufsize = buffer.size();
+	if (_NSGetExecutablePath(&buffer[0], &bufsize) != 0) {
+		throw std::runtime_error("Call to _NSGetExecutablePath failed for mysterious reasons.");
+	}
+	std::string ret = std::string(&buffer[0]);
+	return ret.substr(0, ret.rfind('/'));
+	#else
+	#error "No idea what the OS is."
+	#endif
 }
 
 std::string data_path(std::string const &suffix) {

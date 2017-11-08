@@ -5,6 +5,8 @@
 #include <fstream>
 
 kit::BoneAnimation::BoneAnimation(std::string const &filename) {
+	std::cout << "Reading bone-based animation from '" << filename << "'." << std::endl;
+
 	std::ifstream file(filename, std::ios::binary);
 
 	std::vector< char > strings;
