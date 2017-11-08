@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <list>
 #include <functional>
+#include <string>
 
 //Kit apps must define two things:
 //(1) Configuration function. Called before GL context exists, requests configuration:
