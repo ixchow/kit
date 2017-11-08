@@ -59,7 +59,7 @@ struct GLAttribBuffer< A0 > : GLBuffer {
 	GLsizei count = 0;
 
 	struct Vertex {
-		Vertex(A0 &&a0_) : a0(a0_) { }
+		Vertex(A0 &&a0_) : a0(std::forward< A0 >(a0_)) { }
 		Vertex() = default;
 		A0 a0;
 	};
@@ -90,7 +90,7 @@ struct GLAttribBuffer< A0, A1 > : GLBuffer {
 	GLsizei count = 0;
 
 	struct Vertex {
-		Vertex(A0 &&a0_, A1 &&a1_) : a0(std::forward(a0_)), a1(std::forward(a1_)) { }
+		Vertex(A0 &&a0_, A1 &&a1_) : a0(std::forward< A0 >(a0_)), a1(std::forward< A1 >(a1_)) { }
 		Vertex() = default;
 		A0 a0;
 		A1 a1;
