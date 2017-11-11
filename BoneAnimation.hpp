@@ -3,7 +3,7 @@
 #include "GLBuffer.hpp"
 
 #include <glm/glm.hpp>
-#include <glm/gtx/quaternion.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 #include <map>
 #include <string>
