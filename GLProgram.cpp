@@ -3,27 +3,8 @@
 #include <iostream>
 #include <vector>
 
-
-static GLuint compile_shader(GLenum type, std::string const &source);
-static GLuint link_program(GLuint vertex_shader, GLuint fragment_shader);
-
-GLProgram::GLProgram( std::string const &vertex_source, std::string const &fragment_source ) {
-	GLuint vertex_shader = compile_shader(GL_VERTEX_SHADER, vertex_source);
-	GLuint fragment_shader = compile_shader(GL_FRAGMENT_SHADER, fragment_source);
-
-	program = link_program(fragment_shader, vertex_shader);
-
-	glDeleteShader(vertex_shader);
-	glDeleteShader(fragment_shader);
-
-}
-GLProgram::~GLProgram() {
-	glDeleteProgram(program);
-}
-
-
-static GLuint compile_shader(GLenum type, std::string const &source) {
-	GLuint shader = glCreateShader(type);
+GLShader::GLShader( GLenum type, std::string const &source ) {
+	shader = glCreateShader(type);
 	GLchar const *str = source.c_str();
 	GLint length = source.size();
 	glShaderSource(shader, 1, &str, &length);
@@ -41,13 +22,12 @@ static GLuint compile_shader(GLenum type, std::string const &source) {
 		glDeleteShader(shader);
 		throw std::runtime_error("Failed to compile shader.");
 	}
-	return shader;
 }
 
-static GLuint link_program(GLuint fragment_shader, GLuint vertex_shader) {
-	GLuint program = glCreateProgram();
-	glAttachShader(program, vertex_shader);
-	glAttachShader(program, fragment_shader);
+GLProgram::GLProgram( GLShader const &s0, GLShader const &s1 ) {
+	program = glCreateProgram();
+	glAttachShader(program, s0.shader);
+	glAttachShader(program, s1.shader);
 	glLinkProgram(program);
 	GLint link_status = GL_FALSE;
 	glGetProgramiv(program, GL_LINK_STATUS, &link_status);
@@ -61,5 +41,4 @@ static GLuint link_program(GLuint fragment_shader, GLuint vertex_shader) {
 		std::cerr << "Info log: " << std::string(info_log.begin(), info_log.begin() + length);
 		throw std::runtime_error("Failed to link program");
 	}
-	return program;
 }
