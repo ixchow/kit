@@ -13,17 +13,20 @@ for i in range(0,len(sys.argv)):
 	if sys.argv[i] == '--':
 		args = sys.argv[i+1:]
 
-if len(args) != 3:
-	print("\n\nUsage:\nblender --background --python export-animation.py -- <infile.blend> <????> <outfile.anim>\nExports an armature-animated mesh to a binary blob.\n")
+if len(args) != 4:
+	print("\n\nUsage:\nblender --background --python export-animation.py -- <infile.blend> <object> <action[,action2][,...]> <outfile.anim>\nExports an armature-animated mesh to a binary blob.\n")
 	exit(1)
 
 infile = args[0]
-#layer = int(args[1])
-outfile = args[2]
+object_name = args[1]
+action_names = args[2].split(",")
+outfile = args[3]
+
+print("Will read '" + infile + "' and export object '" + object_name + "' with actions '" + "', '".join(action_names) + "'")
 
 #TODO: read params file(?)
-object_name = "Blob"
-action_names = ["Stand", "Run"]
+#object_name = "Blob"
+#action_names = ["Stand", "Run"]
 
 bpy.ops.wm.open_mainfile(filepath=infile)
 
@@ -242,7 +245,8 @@ def write_mesh(mesh, xf=mathutils.Matrix(), do_normal=True, do_color=True, do_uv
 					vertex_data += struct.pack('f', bw[0])
 
 				for bw in bone_weights:
-					vertex_data += bone_name_to_idx[bw[1]]
+					idx = struct.unpack('I', bone_name_to_idx[bw[1]])[0]
+					vertex_data += struct.pack('I', idx)
 
 obj_to_arm = armature.matrix_world.copy()
 obj_to_arm.invert()
