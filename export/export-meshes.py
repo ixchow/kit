@@ -13,7 +13,7 @@ for i in range(0,len(sys.argv)):
 		args = sys.argv[i+1:]
 
 if len(args) != 3:
-	print("\n\nUsage:\nblender --background --python export-meshes.py -- <infile.blend> <layer> <outfile.p[n][c][t]>\nExports the meshes referenced by all objects to a binary blob, indexed by the names of the objects that reference them.\n")
+	print("\n\nUsage:\nblender --background --python export-meshes.py -- <infile.blend> <layer> <outfile.p[n][c][t][l]>\nExports the meshes referenced by all objects to a binary blob, indexed by the names of the objects that reference them. If 'l' is specified in the file extension, only mesh edges will be exported.\n")
 	exit(1)
 
 infile = args[0]
@@ -21,12 +21,13 @@ layer = int(args[1])
 outfile = args[2]
 
 class FileType:
-	def __init__(self, magic):
+	def __init__(self, magic, as_lines = False):
 		self.magic = magic
 		self.position = (b"p" in magic)
 		self.normal = (b"n" in magic)
 		self.color = (b"c" in magic)
 		self.texcoord = (b"t" in magic)
+		self.as_lines = as_lines
 		self.vertex_bytes = 0
 		if self.position: self.vertex_bytes += 3 * 4
 		if self.normal: self.vertex_bytes += 3 * 4
@@ -35,6 +36,7 @@ class FileType:
 
 filetypes = {
 	".p" : FileType(b"p..."),
+	".pl" : FileType(b"p...", True),
 	".pn" : FileType(b"pn.."),
 	".pc" : FileType(b"pc.."),
 	".pt" : FileType(b"pt.."),
@@ -89,7 +91,8 @@ for obj in bpy.data.objects:
 	name = mesh.name
 
 	print("Writing '" + name + "'...")
-	bpy.ops.object.mode_set(mode='OBJECT') #get out of edit mode (just in case)
+	if bpy.context.mode == 'EDIT':
+		bpy.ops.object.mode_set(mode='OBJECT') #get out of edit mode (just in case)
 
 	#make sure object is on a visible layer:
 	bpy.context.scene.layers = obj.layers
@@ -98,14 +101,15 @@ for obj in bpy.data.objects:
 	obj.select = True
 	bpy.context.scene.objects.active = obj
 
-	#subdivide object's mesh into triangles:
-	bpy.ops.object.mode_set(mode='EDIT')
-	bpy.ops.mesh.select_all(action='SELECT')
-	bpy.ops.mesh.quads_convert_to_tris(quad_method='BEAUTY', ngon_method='BEAUTY')
-	bpy.ops.object.mode_set(mode='OBJECT')
+	if not filetype.as_lines:
+		#subdivide object's mesh into triangles:
+		bpy.ops.object.mode_set(mode='EDIT')
+		bpy.ops.mesh.select_all(action='SELECT')
+		bpy.ops.mesh.quads_convert_to_tris(quad_method='BEAUTY', ngon_method='BEAUTY')
+		bpy.ops.object.mode_set(mode='OBJECT')
 
-	#compute normals (respecting face smoothing):
-	mesh.calc_normals_split()
+		#compute normals (respecting face smoothing):
+		mesh.calc_normals_split()
 
 	#record mesh name, start position and vertex count in the index:
 	name_begin = len(strings)
@@ -114,8 +118,9 @@ for obj in bpy.data.objects:
 	index += struct.pack('I', name_begin)
 	index += struct.pack('I', name_end)
 
-	index += struct.pack('I', vertex_count)
-	index += struct.pack('I', len(mesh.polygons) * 3)
+	start = vertex_count
+	index += struct.pack('I', start) #start
+	#...count will be written below
 
 	colors = None
 	if filetype.color:
@@ -131,31 +136,49 @@ for obj in bpy.data.objects:
 		else:
 			uvs = obj.data.uv_layers.active.data
 
-	#write the mesh:
-	for poly in mesh.polygons:
-		assert(len(poly.loop_indices) == 3)
-		for i in range(0,3):
-			assert(mesh.loops[poly.loop_indices[i]].vertex_index == poly.vertices[i])
-			loop = mesh.loops[poly.loop_indices[i]]
-			vertex = mesh.vertices[loop.vertex_index]
-			for x in mesh.vertices[loop.vertex_index].co:
-				data += struct.pack('f', x)
-			if filetype.normal:
-				for x in loop.normal:
+	if not filetype.as_lines:
+		#write the mesh triangles:
+		for poly in mesh.polygons:
+			assert(len(poly.loop_indices) == 3)
+			for i in range(0,3):
+				assert(mesh.loops[poly.loop_indices[i]].vertex_index == poly.vertices[i])
+				loop = mesh.loops[poly.loop_indices[i]]
+				vertex = mesh.vertices[loop.vertex_index]
+				for x in vertex.co:
 					data += struct.pack('f', x)
-			if filetype.color:
-				if colors != None:
-					col = colors[poly.loop_indices[i]].color
-					data += struct.pack('BBBB', int(col.r * 255), int(col.g * 255), int(col.b * 255), 255)
-				else:
-					data += struct.pack('BBBB', 255, 255, 255, 255)
-			if filetype.texcoord:
-				if uvs != None:
-					uv = uvs[poly.loop_indices[i]].uv
-					data += struct.pack('ff', uv.x, uv.y)
-				else:
-					data += struct.pack('ff', 0, 0)
-	vertex_count += len(mesh.polygons) * 3
+				if filetype.normal:
+					for x in loop.normal:
+						data += struct.pack('f', x)
+				if filetype.color:
+					if colors != None:
+						col = colors[poly.loop_indices[i]].color
+						data += struct.pack('BBBB', int(col.r * 255), int(col.g * 255), int(col.b * 255), 255)
+					else:
+						data += struct.pack('BBBB', 255, 255, 255, 255)
+				if filetype.texcoord:
+					if uvs != None:
+						uv = uvs[poly.loop_indices[i]].uv
+						data += struct.pack('ff', uv.x, uv.y)
+					else:
+						data += struct.pack('ff', 0, 0)
+		vertex_count += len(mesh.polygons) * 3
+	else:
+		#write the mesh edges:
+		for edge in mesh.edges:
+			assert(len(edge.vertices) == 2)
+			for i in range(0,2):
+				vertex = mesh.vertices[edge.vertices[i]]
+				for x in vertex.co:
+					data += struct.pack('f', x)
+				#None of these are unique on edges:
+				assert(not filetype.normal)
+				assert(not filetype.color)
+				assert(not filetype.texcoord)
+		vertex_count += len(mesh.edges) * 2
+
+	#count:
+	index += struct.pack('I', vertex_count - start)
+
 
 #check that we wrote as much data as anticipated:
 assert(vertex_count * filetype.vertex_bytes == len(data))

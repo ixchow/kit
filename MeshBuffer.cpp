@@ -15,9 +15,13 @@ namespace kit {
 MeshBuffer::MeshBuffer(std::string const &filename) {
 	std::ifstream file(filename, std::ios::binary);
 
+	auto endswith = [&filename](std::string ext) {
+		return filename.size() >= ext.size() && filename.substr(filename.size()-ext.size()) == ext;
+	};
+
 	GLuint total = 0;
 	//read + upload data chunk:
-	if (filename.size() >= 2 && filename.substr(filename.size()-2) == ".p") {
+	if (endswith(".p") || endswith(".pl")) {
 		GLAttribBuffer< glm::vec3 > buffer;
 		std::vector< decltype(buffer)::Vertex > data;
 		read_chunk(file, "p...", &data);
@@ -31,7 +35,7 @@ MeshBuffer::MeshBuffer(std::string const &filename) {
 		Position = buffer[0];
 
 		this->buffer = std::move(buffer);
-	} else if (filename.size() >= 3 && filename.substr(filename.size()-3) == ".pn") {
+	} else if (endswith(".pn")) {
 		GLAttribBuffer< glm::vec3, glm::vec3 > buffer;
 		std::vector< decltype(buffer)::Vertex > data;
 		read_chunk(file, "pn..", &data);
@@ -46,7 +50,22 @@ MeshBuffer::MeshBuffer(std::string const &filename) {
 		Normal = buffer[1];
 
 		this->buffer = std::move(buffer);
-	} else if (filename.size() >= 4 && filename.substr(filename.size()-4) == ".pnc") {
+	} else if (endswith(".pc")) {
+		GLAttribBuffer< glm::vec3, glm::u8vec4 > buffer;
+		std::vector< decltype(buffer)::Vertex > data;
+		read_chunk(file, "pc..", &data);
+
+		//upload data:
+		buffer.set(data, GL_STATIC_DRAW);
+
+		total = data.size(); //store total for later checks on index
+
+		//store attrib locations:
+		Position = buffer[0];
+		Color = buffer[1];
+
+		this->buffer = std::move(buffer);
+	} else if (endswith(".pnc")) {
 		GLAttribBuffer< glm::vec3, glm::vec3, glm::u8vec4 > buffer;
 		std::vector< decltype(buffer)::Vertex > data;
 		read_chunk(file, "pnc.", &data);

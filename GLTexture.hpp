@@ -10,6 +10,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <vector>
+
 struct GLTexture {
 	GLuint texture = 0;
 	GLTexture() { glGenTextures(1, &texture); }
