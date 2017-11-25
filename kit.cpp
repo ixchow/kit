@@ -3,6 +3,7 @@
 #include <iostream>
 
 namespace kit {
+	std::vector< std::string > args;
 	State state;
 	Display display;
 	Config config;

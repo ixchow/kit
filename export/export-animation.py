@@ -7,6 +7,7 @@ import bpy
 import struct
 import bmesh
 import mathutils
+import re;
 
 args = []
 for i in range(0,len(sys.argv)):
@@ -14,12 +15,12 @@ for i in range(0,len(sys.argv)):
 		args = sys.argv[i+1:]
 
 if len(args) != 4:
-	print("\n\nUsage:\nblender --background --python export-animation.py -- <infile.blend> <object> <action[,action2][,...]> <outfile.anim>\nExports an armature-animated mesh to a binary blob.\n")
+	print("\n\nUsage:\nblender --background --python export-animation.py -- <infile.blend> <object> <action[;action2][;...]> <outfile.anim>\nExports an armature-animated mesh to a binary blob.\n<action> can also be a named frame range as per '[100,150]Walk'\n<action> can specify root transforms by appending 'Walk!local' (local to armature),'Walk!global' (world-relative),'Walk!first' (first-frame relative)")
 	exit(1)
 
 infile = args[0]
 object_name = args[1]
-action_names = args[2].split(",")
+action_names = args[2].split(";")
 outfile = args[3]
 
 print("Will read '" + infile + "' and export object '" + object_name + "' with actions '" + "', '".join(action_names) + "'")
@@ -33,6 +34,8 @@ bpy.ops.wm.open_mainfile(filepath=infile)
 #Find the object and its armature:
 obj = bpy.data.objects[object_name]
 armature = obj.find_armature()
+
+bpy.context.scene.layers = obj.layers
 
 #-----------------------------
 #write out appropriate data:
@@ -85,7 +88,7 @@ frame_data = b''
 frame_count = 0
 
 #write frame:
-def write_frame(pose):
+def write_frame(pose, root_xf=mathutils.Matrix()):
 	global frame_data
 	global frame_count
 	frame_count += 1
@@ -102,7 +105,7 @@ def write_frame(pose):
 			to_parent.invert()
 			local_to_parent = to_parent * pose_bone.matrix
 		else:
-			local_to_parent = pose_bone.matrix
+			local_to_parent = root_xf * pose_bone.matrix
 
 		trs = local_to_parent.decompose()
 		frame_data += struct.pack('3f', trs[0].x, trs[0].y, trs[0].z)
@@ -111,21 +114,36 @@ def write_frame(pose):
 
 action_data = b''
 
-#write action as name + series of frames:
-def write_action(action):
+#write sequence of current timeline:
+def write_frame_range(name, first, last, relative='local'):
 	global action_data
-	armature.animation_data.action = action
-	action_data += write_string(action.name) #name (begin, end)
+	action_data += write_string(name) #name (begin, end)
 	action_data += struct.pack('I', frame_count) #first frame
-	first = round(action.frame_range[0])
-	last = round(action.frame_range[1])
+
+	if relative == 'local':
+		to_world = mathutils.Matrix()
+	elif relative == 'first':
+		inv_matrix_first = armature.matrix_world.copy()
+		inv_matrix_first.invert()
+	elif relative == 'global':
+		bpy.context.scene.frame_set(first, 0.0) #note: second param is sub-frame
+		to_world = armature.matrix_world
+	else:
+		print("Don't understand root motion specifier '" + relative + "'; expecting local, first, or global")
+		exit(1)
+
 	for frame in range(first, last+1):
 		bpy.context.scene.frame_set(frame, 0.0) #note: second param is sub-frame
-		write_frame(armature.pose)
+		if relative == 'first':
+			to_world = inv_matrix_first * armature.matrix_world
+		write_frame(armature.pose, root_xf=to_world)
 	action_data += struct.pack('I', frame_count) #last frame
-	print("Wrote '" + action.name + "' frames [" + str(first) + ", " + str(last) + "]")
+	print("Wrote '" + name + "' frames [" + str(first) + ", " + str(last) + "] mode '" + relative + "'")
 
-
+#write action as name + series of frames:
+def write_action(action, relative='local'):
+	armature.animation_data.action = action
+	write_frame_range(action.name, round(action.frame_range[0]), round(action.frame_range[1]), relative=relative)
 
 #Write hierarchy, names, bind matrices for bones:
 for bone in armature.data.bones:
@@ -139,8 +157,27 @@ for kv in bone_name_to_idx.items():
 	idx_to_bone_name[idx] = kv[0]
 
 #Now, for each action, write animation frames:
+real_action_names = []
+#(first pass: named frame ranges)
 for action_name in action_names:
-	write_action(bpy.data.actions[action_name])
+	m = re.match(r"^(.*)!(.*)$", action_name)
+	relative = 'local'
+	if m:
+		action_name = m.group(1)
+		relative = m.group(2)
+	m = re.match(r"^\[(\d+),(\d+)\](.*)$", action_name)
+	if m:
+		first = int(m.group(1))
+		last = int(m.group(2))
+		name = m.group(3)
+		print("Writing '" + action_name + "' as a frame range.")
+		write_frame_range(name, first, last, relative=relative)
+	else:
+		real_action_names.append((action_name, relative))
+
+for action_name in real_action_names:
+	print("Writing '" + action_name[0] + "' as a real action.")
+	write_action(bpy.data.actions[action_name[0]], action_name[1])
 
 #----------------------------
 #Extract animated mesh (==> vertex groups and weights)

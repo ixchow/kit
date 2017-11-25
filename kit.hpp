@@ -7,6 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <memory>
+#include <vector>
 #include <unordered_map>
 #include <list>
 #include <functional>
@@ -35,6 +36,10 @@ namespace kit {
 std::shared_ptr< kit::Mode > kit_mode(); //**YOU MUST DEFINE THIS***
 
 namespace kit {
+	//command-line arguments. First is the name of the program.
+	// (may not exist on all platforms)
+	extern std::vector< std::string > args;
+
 	enum State : uint8_t {
 		Stopped = 0, //App isn't running (or fully set up yet).
 			//Stopped -> Hidden after initialization completes.

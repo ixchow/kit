@@ -9,6 +9,11 @@
 #include <chrono>
 
 int main(int argc, char **argv) {
+	kit::args.resize(argc);
+	for (int arg = 0; arg < argc; ++arg) {
+		kit::args[arg] = argv[arg];
+	}
+
 	kit::state = kit::Stopped;
 
 	kit::Config kit_config = ::kit_config(); //app sets config
