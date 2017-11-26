@@ -82,7 +82,7 @@ struct GLVertexArray {
 				std::cerr << "ERROR: attribute '" << name << "' [" << idx << "] was not bound." << std::endl;
 				unbound = true;
 			} else {
-				std::cerr << "INFO: attribute '" << name << "' was bound." << std::endl; //DEBUG
+				//std::cerr << "INFO: attribute '" << name << "' was bound." << std::endl; //DEBUG
 			}
 		}
 		if (unbound) throw std::runtime_error("Incomplete binding.");
