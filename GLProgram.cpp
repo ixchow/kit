@@ -24,10 +24,11 @@ GLShader::GLShader( GLenum type, std::string const &source ) {
 	}
 }
 
-GLProgram::GLProgram( GLShader const &s0, GLShader const &s1 ) {
+GLProgram::GLProgram( std::initializer_list< GLShader const * > const &shaders ) {
 	program = glCreateProgram();
-	glAttachShader(program, s0.shader);
-	glAttachShader(program, s1.shader);
+	for (auto s : shaders) {
+		glAttachShader(program, s->shader);
+	}
 	glLinkProgram(program);
 	GLint link_status = GL_FALSE;
 	glGetProgramiv(program, GL_LINK_STATUS, &link_status);

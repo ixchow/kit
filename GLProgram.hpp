@@ -13,6 +13,7 @@
 #include <string>
 #include <stdexcept>
 #include <iostream>
+#include <initializer_list>
 
 struct GLShader {
 	GLuint shader = 0;
@@ -38,7 +39,8 @@ struct GLProgram {
 		GLShader( GL_FRAGMENT_SHADER, fragment_source ) ) { }
 
 	//Links program from shader objects:
-	GLProgram( GLShader const &shader0, GLShader const &shader1 );
+	GLProgram( GLShader const &shader0, GLShader const &shader1 ) : GLProgram({ &shader0, &shader1 }) { }
+	GLProgram( std::initializer_list< GLShader const * > const &shaders );
 
 	~GLProgram() { if (program != 0) glDeleteProgram(program); }
 	GLProgram(GLProgram const &) = delete;
