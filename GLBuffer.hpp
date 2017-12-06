@@ -327,7 +327,7 @@ struct GLAttribBuffer< A0, A1, A2, A3, A4, A5 > : GLBuffer {
 		A2 a2;
 		A3 a3;
 		A4 a4;
-		A4 a5;
+		A5 a5;
 	};
 	static_assert(sizeof(Vertex) == sizeof(A0) + sizeof(A1) + sizeof(A2) + sizeof(A3) + sizeof(A4) + sizeof(A5), "Vertex is packed.");
 
