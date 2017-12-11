@@ -59,8 +59,10 @@ struct GLAttribBuffer< A0 > : GLBuffer {
 	GLsizei count = 0;
 
 	struct Vertex {
-		Vertex(A0 &&a0_) : a0(std::forward< A0 >(a0_)) { }
+		template< typename T0, typename std::enable_if< !std::is_same< typename std::decay< T0 >::type, Vertex >::value >::type* = nullptr >
+		Vertex(T0 &&a0_) : a0(std::forward< T0 >(a0_)) { }
 		Vertex() = default;
+		Vertex(Vertex const &) = default;
 		A0 a0;
 	};
 	static_assert(sizeof(Vertex) == sizeof(A0), "Vertex is packed.");
@@ -90,8 +92,10 @@ struct GLAttribBuffer< A0, A1 > : GLBuffer {
 	GLsizei count = 0;
 
 	struct Vertex {
-		Vertex(A0 &&a0_, A1 &&a1_) : a0(std::forward< A0 >(a0_)), a1(std::forward< A1 >(a1_)) { }
+		template< typename T0, typename T1 >
+		Vertex(T0&& a0_, T1&& a1_) : a0(std::forward< T0 >(a0_)), a1(std::forward< T1 >(a1_)) { }
 		Vertex() = default;
+		Vertex(Vertex const &) = default;
 		A0 a0;
 		A1 a1;
 	};
@@ -134,8 +138,10 @@ struct GLAttribBuffer< A0, A1, A2 > : GLBuffer {
 	GLsizei count = 0;
 
 	struct Vertex {
-		Vertex(A0 &&a0_, A1 &&a1_, A2 &&a2_) : a0(std::forward< A0 >(a0_)), a1(std::forward< A1 >(a1_)), a2(std::forward< A2 >(a2_)) { }
+		template< typename T0, typename T1, typename T2 >
+		Vertex(T0&& a0_, T1&& a1_, T2&& a2_) : a0(std::forward< A0 >(a0_)), a1(std::forward< A1 >(a1_)), a2(std::forward< A2 >(a2_)) { }
 		Vertex() = default;
+		Vertex(Vertex const &) = default;
 		A0 a0;
 		A1 a1;
 		A2 a2;
@@ -187,8 +193,10 @@ struct GLAttribBuffer< A0, A1, A2, A3 > : GLBuffer {
 	GLsizei count = 0;
 
 	struct Vertex {
-		Vertex(A0 &&a0_, A1 &&a1_, A2 &&a2_, A3 &&a3_) : a0(std::forward< A0 >(a0_)), a1(std::forward< A1 >(a1_)), a2(std::forward< A2 >(a2_)), a3(std::forward< A3 >(a3_)) { }
+		template< typename T0, typename T1, typename T2, typename T3 >
+		Vertex(T0 &&a0_, T1 &&a1_, T2 &&a2_, T3 &&a3_) : a0(std::forward< T0 >(a0_)), a1(std::forward< T1 >(a1_)), a2(std::forward< T2 >(a2_)), a3(std::forward< T3 >(a3_)) { }
 		Vertex() = default;
+		Vertex(Vertex const &) = default;
 		A0 a0;
 		A1 a1;
 		A2 a2;
@@ -249,8 +257,10 @@ struct GLAttribBuffer< A0, A1, A2, A3, A4 > : GLBuffer {
 	GLsizei count = 0;
 
 	struct Vertex {
-		Vertex(A0 &&a0_, A1 &&a1_, A2 &&a2_, A3 &&a3_, A4 &&a4_) : a0(std::forward(a0_)), a1(std::forward(a1_)), a2(std::forward(a2_)), a3(std::forward(a3_)), a4(std::forward(a4_)) { }
+		template< typename T0, typename T1, typename T2, typename T3, typename T4 >
+		Vertex(T0 &&a0_, T1 &&a1_, T2 &&a2_, T3 &&a3_, T4 &&a4_) : a0(std::forward< T0 >(a0_)), a1(std::forward< T1 >(a1_)), a2(std::forward< T2 >(a2_)), a3(std::forward< T3 >(a3_)), a4(std::forward< T4 >(a4_)) { }
 		Vertex() = default;
+		Vertex(Vertex const &) = default;
 		A0 a0;
 		A1 a1;
 		A2 a2;
@@ -320,8 +330,10 @@ struct GLAttribBuffer< A0, A1, A2, A3, A4, A5 > : GLBuffer {
 	GLsizei count = 0;
 
 	struct Vertex {
-		Vertex(A0 &&a0_, A1 &&a1_, A2 &&a2_, A3 &&a3_, A4 &&a4_, A5 &&a5_) : a0(std::forward(a0_)), a1(std::forward(a1_)), a2(std::forward(a2_)), a3(std::forward(a3_)), a4(std::forward(a4_)), a5(std::forward(a5_)) { }
+		template< typename T0, typename T1, typename T2, typename T3, typename T4, typename T5 >
+		Vertex(T0 &&a0_, T1 &&a1_, T2 &&a2_, T3 &&a3_, T4 &&a4_, T5 &&a5_) : a0(std::forward< T0 >(a0_)), a1(std::forward< T1 >(a1_)), a2(std::forward< T2 >(a2_)), a3(std::forward< T3 >(a3_)), a4(std::forward< T4 >(a4_)), a5(std::forward< T5 >(a5_)) { }
 		Vertex() = default;
+		Vertex(Vertex const &) = default;
 		A0 a0;
 		A1 a1;
 		A2 a2;
