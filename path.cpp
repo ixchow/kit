@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <vector>
+#include <sstream>
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -20,8 +21,17 @@
 //Linux version:
 std::string get_data_path() {
 	#if defined(_WIN32)
-	#error "No code written for Win32 yet -- should use GetModuleFileName()"
 	//See: https://stackoverflow.com/questions/1023306/finding-current-executables-path-without-proc-self-exe
+	std::cout << "Fetching path..." << std::endl;
+	TCHAR buffer[MAX_PATH];
+	GetModuleFileName(NULL, buffer, MAX_PATH);
+	std::cout << "Got buffer:" << std::endl;
+	std::cout << buffer << std::endl;
+	std::string ret = buffer;
+	ret = ret.substr(0, ret.rfind('\\'));
+	std::cout << ret << std::endl;
+	return ret;
+
 	#elif defined(__linux__)
 	//From: https://stackoverflow.com/questions/933850/how-do-i-find-the-location-of-the-executable-in-c
 	std::vector< char > buffer(1000);

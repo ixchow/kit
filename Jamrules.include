@@ -40,6 +40,11 @@ if $(OS) = NT {
 		#disable a few warnings:
 		/wd4146 #-1U is still unsigned
 		/wd4297 #unforunately SDLmain is nothrow
+		#for modern glm:
+		/DGLM_ENABLE_EXPERIMENTAL
+		#math defines from cmath, not from SDL:
+		/D_USE_MATH_DEFINES /DHAVE_M_PI
+		/DWIN32_LEAN_AND_MEAN
 	;
 	LINKFLAGS = /nologo /SUBSYSTEM:CONSOLE
 		/LIBPATH:"kit-libs-win/out/lib"

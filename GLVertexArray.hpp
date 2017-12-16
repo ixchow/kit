@@ -54,7 +54,11 @@ struct GLVertexArray {
 				if (lp.second.interpretation == KIT_AS_INTEGER) {
 					glVertexAttribIPointer(lp.first, lp.second.size, lp.second.type, lp.second.stride, (GLbyte *)0 + lp.second.offset);
 				} else if (lp.second.interpretation == KIT_AS_DOUBLE) {
+					#ifndef _WIN32
 					glVertexAttribLPointer(lp.first, lp.second.size, lp.second.type, lp.second.stride, (GLbyte *)0 + lp.second.offset);
+					#else
+					assert(0 && "Need to add this to gl_shims");
+					#endif
 				} else {
 					glVertexAttribPointer(lp.first, lp.second.size, lp.second.type,
 						(lp.second.interpretation == KIT_NORMALIZED_AS_FLOAT ? GL_TRUE : GL_FALSE),
