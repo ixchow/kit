@@ -36,6 +36,7 @@ obj = bpy.data.objects[object_name]
 armature = obj.find_armature()
 
 bpy.context.scene.layers = obj.layers
+obj.hide = False
 
 #-----------------------------
 #write out appropriate data:
