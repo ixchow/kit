@@ -24,7 +24,7 @@ GLShader::GLShader( GLenum type, std::string const &source ) {
 	}
 }
 
-GLProgram::GLProgram( std::initializer_list< GLShader const * > const &shaders ) {
+GLProgram::GLProgram( std::initializer_list< GLShader const * > shaders ) {
 	program = glCreateProgram();
 	for (auto s : shaders) {
 		glAttachShader(program, s->shader);

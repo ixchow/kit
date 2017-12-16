@@ -34,13 +34,27 @@ struct GLProgram {
 	GLProgram(
 		std::string const &vertex_source,
 		std::string const &fragment_source
-	) : GLProgram(
+	) : GLProgram{
 		GLShader( GL_VERTEX_SHADER, vertex_source ),
-		GLShader( GL_FRAGMENT_SHADER, fragment_source ) ) { }
+		GLShader( GL_FRAGMENT_SHADER, fragment_source ) } { }
+	GLProgram(
+		GLShader const &vertex_shader,
+		std::string const &fragment_source
+	) : GLProgram{
+		vertex_shader,
+		GLShader( GL_FRAGMENT_SHADER, fragment_source ) } { }
+	GLProgram(
+		std::string const &vertex_source,
+		GLShader const &fragment_shader
+	) : GLProgram{
+		GLShader( GL_VERTEX_SHADER, vertex_source ),
+		fragment_shader } { }
+
 
 	//Links program from shader objects:
 	GLProgram( GLShader const &shader0, GLShader const &shader1 ) : GLProgram({ &shader0, &shader1 }) { }
-	GLProgram( std::initializer_list< GLShader const * > const &shaders );
+	GLProgram( std::initializer_list< GLShader const * > shaders );
+
 
 	~GLProgram() { if (program != 0) glDeleteProgram(program); }
 	GLProgram(GLProgram const &) = delete;
