@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
 			kit::Button::clear_events();
 			while (SDL_PollEvent(&evt) == 1 && mode) {
 				if (evt.type == SDL_WINDOWEVENT && evt.window.event == SDL_WINDOWEVENT_ENTER) {
-					std::cout << "Mouse Enter." << std::endl; //DEBUG
+					//std::cout << "Mouse Enter." << std::endl; //DEBUG
 					kit::Pointer new_state;
 					int x,y;
 					Uint32 buttons = SDL_GetMouseState(&x, &y);
@@ -126,7 +126,7 @@ int main(int argc, char **argv) {
 					;
 					kit::dispatch_pointer_action(MouseID, kit::PointerEnter, new_state);
 				} else if (evt.type == SDL_WINDOWEVENT && evt.window.event == SDL_WINDOWEVENT_LEAVE) {
-					std::cout << "Mouse Leave." << std::endl; //DEBUG
+					//std::cout << "Mouse Leave." << std::endl; //DEBUG
 					kit::Pointer new_state;
 					int x,y;
 					Uint32 buttons = SDL_GetMouseState(&x, &y);
