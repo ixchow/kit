@@ -54,6 +54,51 @@ if $(OS) = NT {
 	LINKLIBS = SDL2main.lib SDL2.lib OpenGL32.lib libpng.lib zlib.lib ;
 
 	File dist$(SEP)SDL2.dll : kit-libs-win$(SEP)out$(SEP)dist$(SEP)SDL2.dll ;
+
+
+	
+	#Below is from http://maillist.perforce.com/pipermail/jamming/2000-October/001065.html
+
+	# Resource : builds a resource file
+	#
+	rule Resource
+	{
+	     SEARCH on $(>) = $(SEARCH_SOURCE) ;
+	     MakeLocate $(<) : $(LOCATE_TARGET) ;
+
+	     DEPENDS $(<) : $(>) ;
+	     Clean clean : $(<) ;
+
+	     RCFLAGS on $(<) = $(RCFLAGS) /d$(RCDEFINES) ;
+	}
+
+	actions Resource
+	{
+	     RC $(RCFLAGS) /Fo$(<) $(>)
+	}
+
+	#
+	# LinkResource : Links the resource file into an executable
+	#
+	rule LinkResource
+	{
+	     local t r ;
+
+	     if $(<:S)
+	     {
+	         t = $(<) ;
+	     } else {
+	         t = $(<:S=$(SUFEXE)) ;
+	     }
+
+    	 r = $(>:S=.res) ;
+
+	     DEPENDS $(t) : $(r) ;
+	     NEEDLIBS on $(t) += $(r) ;
+	}
+
+	#end resource stuff
+
 #- - - - - - - - - - - - - - - -
 } else if $(OS) = MACOSX {
 	KIT_LIBS = kit-libs-osx ;
