@@ -166,7 +166,7 @@ int main(int argc, char **argv) {
 				}
 				//exit not-so-gracefully on a "quit" message:
 				if (evt.type == SDL_QUIT) {
-					exit(1);
+					kit::set_mode( nullptr );
 				}
 			}
 		}
