@@ -58,6 +58,7 @@ void GLProgram::DEBUG_dump_info(std::string const &name) {
 			name[99] = '\0';
 			GLuint idx = glGetAttribLocation(program, name);
 			auto str = [](GLenum type) -> std::string {
+				#undef DO
 				#define DO( X ) if (type == GL_ ## X) return #X;
 				DO( FLOAT ) DO( FLOAT_VEC2 ) DO( FLOAT_VEC3 ) DO( FLOAT_VEC4 )
 				DO( FLOAT_MAT2 ) DO( FLOAT_MAT2x3 ) DO( FLOAT_MAT2x4 )
