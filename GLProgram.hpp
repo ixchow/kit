@@ -63,6 +63,10 @@ struct GLProgram {
 
 	//---------
 
+	void DEBUG_dump_info(std::string const &name);
+
+	//---------
+
 	enum MissingIs {
 		MissingIsWarning = 0,
 		MissingIsError = 1,
