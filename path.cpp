@@ -18,7 +18,8 @@
 #endif //WINDOWS
 
 
-//Linux version:
+std::string data_path_subdir = "";
+
 std::string get_data_path() {
 	#if defined(_WIN32)
 	//See: https://stackoverflow.com/questions/1023306/finding-current-executables-path-without-proc-self-exe
@@ -64,7 +65,7 @@ std::string get_data_path() {
 
 std::string data_path(std::string const &suffix) {
 	static std::string path = get_data_path();
-	return path + "/" + suffix;
+	return path + "/" + data_path_subdir + suffix;
 }
 
 /* From Rktcr; to be used eventually!
