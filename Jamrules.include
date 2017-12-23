@@ -109,6 +109,7 @@ if $(OS) = NT {
 	C++FLAGS =
 		-std=c++14 -g -Wall -Werror
 		-I$(KIT_LIBS)/libpng/include                           #libpng
+		-DGLM_ENABLE_EXPERIMENTAL
 		-I$(KIT_LIBS)/glm/include                              #glm
 		`PATH=$(KIT_LIBS)/SDL2/bin:$PATH sdl2-config --cflags` #SDL2
 		;
@@ -126,6 +127,7 @@ if $(OS) = NT {
 	C++FLAGS =
 		-std=c++11 -g -Wall -Werror
 		-I$(KIT_LIBS)/libpng/include                           #libpng
+		-DGLM_ENABLE_EXPERIMENTAL
 		-I$(KIT_LIBS)/glm/include                              #glm
 		`PATH=$(KIT_LIBS)/SDL2/bin:$PATH sdl2-config --cflags` #SDL2
 		;
