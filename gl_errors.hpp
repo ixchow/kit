@@ -1,6 +1,6 @@
 #pragma once
 
-#include <kit/kit.hpp>
+#include "kit.hpp"
 #include <iostream>
 
 #define STR2(X) # X
