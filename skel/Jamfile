@@ -1,0 +1,13 @@
+SubDir TOP ;
+SubInclude TOP kit ;
+
+MySubDir TOP ;
+
+local NAMES =
+	init.cpp
+	#...your other files here...
+;
+
+MyObjects $(NAMES) ;
+
+MyMainFromObjects kit_skel : $(NAMES:S=$(SUFOBJ)) $(KIT_OBJECTS) ;
