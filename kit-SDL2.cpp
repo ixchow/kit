@@ -112,13 +112,15 @@ int main(int argc, char **argv) {
 			static SDL_Event evt;
 			kit::Button::clear_events();
 			while (SDL_PollEvent(&evt) == 1 && mode) {
+				#define MAPX( X ) ((((X) + 0.5f) / window_size.x) * 2.0f - 1.0f)
+				#define MAPY( Y ) ((((Y) + 0.5f) / window_size.y) *-2.0f + 1.0f)
 				if (evt.type == SDL_WINDOWEVENT && evt.window.event == SDL_WINDOWEVENT_ENTER) {
 					//std::cout << "Mouse Enter." << std::endl; //DEBUG
 					kit::Pointer new_state;
 					int x,y;
 					Uint32 buttons = SDL_GetMouseState(&x, &y);
-					new_state.at.x = (float)x / window_size.x;
-					new_state.at.y = (float)y / window_size.y;
+					new_state.at.x = MAPX(x);
+					new_state.at.y = MAPY(y);
 					new_state.buttons =
 						  ((buttons & SDL_BUTTON(SDL_BUTTON_LEFT)) ? kit::ButtonLeft : 0)
 						| ((buttons & SDL_BUTTON(SDL_BUTTON_MIDDLE)) ? kit::ButtonMiddle : 0)
@@ -130,8 +132,8 @@ int main(int argc, char **argv) {
 					kit::Pointer new_state;
 					int x,y;
 					Uint32 buttons = SDL_GetMouseState(&x, &y);
-					new_state.at.x = (float)x / window_size.x;
-					new_state.at.y = (float)y / window_size.y;
+					new_state.at.x = MAPX(x);
+					new_state.at.y = MAPY(y);
 					new_state.buttons =
 						  ((buttons & SDL_BUTTON(SDL_BUTTON_LEFT)) ? kit::ButtonLeft : 0)
 						| ((buttons & SDL_BUTTON(SDL_BUTTON_MIDDLE)) ? kit::ButtonMiddle : 0)
@@ -140,8 +142,8 @@ int main(int argc, char **argv) {
 					kit::dispatch_pointer_action(MouseID, kit::PointerLeave, new_state);
 				} else if (evt.type == SDL_MOUSEMOTION) {
 					kit::Pointer new_state;
-					new_state.at.x = (float)evt.motion.x / window_size.x;
-					new_state.at.y = (float)evt.motion.y / window_size.y;
+					new_state.at.x = MAPX(evt.motion.x);
+					new_state.at.y = MAPY(evt.motion.y);
 					new_state.buttons =
 						  ((evt.motion.state & SDL_BUTTON(SDL_BUTTON_LEFT)) ? kit::ButtonLeft : 0)
 						| ((evt.motion.state & SDL_BUTTON(SDL_BUTTON_MIDDLE)) ? kit::ButtonMiddle : 0)
@@ -150,8 +152,8 @@ int main(int argc, char **argv) {
 					kit::dispatch_pointer_action(MouseID, kit::PointerMove, new_state);
 				} else if (evt.type == SDL_MOUSEBUTTONDOWN || evt.type == SDL_MOUSEBUTTONUP) {
 					kit::Pointer new_state;
-					new_state.at.x = (float)evt.button.x / window_size.x;
-					new_state.at.y = (float)evt.button.y / window_size.y;
+					new_state.at.x = MAPX(evt.motion.x);
+					new_state.at.y = MAPY(evt.motion.y);
 					new_state.buttons =
 						  ((evt.button.state & SDL_BUTTON(SDL_BUTTON_LEFT)) ? kit::ButtonLeft : 0)
 						| ((evt.button.state & SDL_BUTTON(SDL_BUTTON_MIDDLE)) ? kit::ButtonMiddle : 0)
