@@ -2,6 +2,8 @@
 
 #include <kit/kit.hpp>
 
+#include <iostream>
+
 #define STR2(X) # X
 #define STR(X) STR2(X)
 
