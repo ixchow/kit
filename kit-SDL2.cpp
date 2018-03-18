@@ -95,8 +95,9 @@ int main(int argc, char **argv) {
 				} else {
 					kit::display.aspect = 1.0f;
 				}
+				kit::display.pixel_ratio = float(size.x) / float(window_size.x);
 				//TODO: look these up somehow!
-				kit::display.DPI = 90.0f;
+				kit::display.DPI = 90.0f * kit::display.pixel_ratio;
 				kit::display.IPD = 1.0f / kit::display.DPI;
 
 				glViewport(0,0,size.x,size.y);

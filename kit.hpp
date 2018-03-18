@@ -59,6 +59,7 @@ namespace kit {
 	struct Display {
 		glm::uvec2 size = glm::uvec2(0);
 		float aspect = 1.0f; //aspect ratio (x / y)
+		float pixel_ratio = 1.0f; //size of a layout pixel in display pixels (1.0 for non-HighDPI devices)
 		float DPI = std::numeric_limits< float >::quiet_NaN();
 		float IPD = std::numeric_limits< float >::quiet_NaN();
 	};
