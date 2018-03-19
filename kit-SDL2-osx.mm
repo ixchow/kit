@@ -19,13 +19,15 @@ void kit::osx::start_pointer_handling(void *window_) {//NSWindow __unsafe_unreta
 		//get_loc is a helper to get x,y, (z = pressure) from event
 		auto get_loc = [&]() -> glm::vec3 {
 			NSPoint loc = evt.locationInWindow;
-			NSRect frame = window.frame;
 			if (evt.window == nil) {
+				NSRect frame = window.frame;
 				loc.x -= frame.origin.x;
 				loc.y -= frame.origin.y;
 			}
-			loc.x = (loc.x / frame.size.width) * 2.0f - 1.0f;
-			loc.y = (loc.y / frame.size.height) * 2.0f - 1.0f;
+			loc = [window.contentView convertPoint:loc fromView:nil];
+			NSRect bounds = window.contentView.bounds;
+			loc.x = (loc.x / bounds.size.width) * 2.0f - 1.0f;
+			loc.y = (loc.y / bounds.size.height) * 2.0f - 1.0f;
 			float pressure = evt.pressure;
 			return glm::vec3(loc.x, loc.y, pressure);
 		};
