@@ -59,6 +59,7 @@ namespace kit {
 	struct Display {
 		glm::uvec2 size = glm::uvec2(0);
 		float aspect = 1.0f; //aspect ratio (x / y)
+		float pixel_ratio = 1.0f; //size of a layout pixel in display pixels (1.0 for non-HighDPI devices)
 		float DPI = std::numeric_limits< float >::quiet_NaN();
 		float IPD = std::numeric_limits< float >::quiet_NaN();
 	};
@@ -90,10 +91,13 @@ namespace kit {
 			ScreenStylus, PadStylus,
 		} type = Mouse;*/
 
-		uint8_t buttons; //bits indicating state of buttons
+		uint8_t buttons = 0; //bits indicating state of buttons
 
 		//'at' is in normalized [-1,-1]x[-1,1] display coordinates
 		glm::vec2 at = glm::vec2(std::numeric_limits< float >::quiet_NaN());
+
+		//pressure is in the 0.0f .. 1.0f range; for devices that don't support pressure, will be 0.0f if buttons are up and 1.0f if buttons are down.
+		float pressure = 0.0f;
 	};
 	extern std::unordered_map< PointerID, Pointer > pointers;
 

@@ -120,7 +120,7 @@ void kit::dispatch_pointer_action(PointerID pointer, PointerAction action, Point
 			return;
 		}
 		Pointer const &old_state = p->second;
-		if (new_state.at == old_state.at) {
+		if (new_state.at == old_state.at && new_state.pressure == old_state.pressure) {
 			std::cerr << "WARNING: pointer didn't move during Move action." << std::endl;
 		}
 		if (new_state.buttons != old_state.buttons) {
