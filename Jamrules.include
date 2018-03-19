@@ -120,6 +120,21 @@ if $(OS) = NT {
 		-L$(KIT_LIBS)/zlib/lib -lz                          #zlib
 		`PATH=$(KIT_LIBS)/SDL2/bin:$PATH sdl2-config --static-libs` -framework OpenGL #SDL2
 		;
+
+	#based on https://swarm.workshop.perforce.com/view/guest/perforce_software/jam/src/Jamfile.html
+	rule UserObject {
+		switch $(>) {
+			case *.mm : ObjC++ $(<) : $(>) ;
+			case * : ECHO "unknown suffix on " $(>) ;
+		}
+	}
+	rule ObjC++ {
+		DEPENDS $(<) : $(>) ;
+		Clean clean : $(<) ;
+	}
+	actions ObjC++ {
+		$(C++) $(C++FLAGS) -c -o$(<) $(>)
+	}
 #- - - - - - - - - - - - - - - -
 } else if $(OS) = LINUX {
 	KIT_LIBS = kit-libs-linux ;
