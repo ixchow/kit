@@ -180,10 +180,12 @@ int main(int argc, char **argv) {
 					kit::Pointer new_state;
 					new_state.at.x = MAPX(evt.motion.x);
 					new_state.at.y = MAPY(evt.motion.y);
+					int x,y;
+					Uint32 buttons = SDL_GetMouseState(&x, &y);
 					new_state.buttons =
-						  ((evt.button.state & SDL_BUTTON(SDL_BUTTON_LEFT)) ? kit::ButtonLeft : 0)
-						| ((evt.button.state & SDL_BUTTON(SDL_BUTTON_MIDDLE)) ? kit::ButtonMiddle : 0)
-						| ((evt.button.state & SDL_BUTTON(SDL_BUTTON_RIGHT)) ? kit::ButtonRight : 0)
+						  ((buttons & SDL_BUTTON(SDL_BUTTON_LEFT)) ? kit::ButtonLeft : 0)
+						| ((buttons & SDL_BUTTON(SDL_BUTTON_MIDDLE)) ? kit::ButtonMiddle : 0)
+						| ((buttons & SDL_BUTTON(SDL_BUTTON_RIGHT)) ? kit::ButtonRight : 0)
 					;
 					new_state.pressure = (new_state.buttons ? 1.0f : 0.0f);
 					kit::dispatch_pointer_action(MouseID, (evt.type == SDL_MOUSEBUTTONDOWN ? kit::PointerDown : kit::PointerUp), new_state);
