@@ -139,7 +139,7 @@ struct GLAttribBuffer< A0, A1, A2 > : GLBuffer {
 
 	struct Vertex {
 		template< typename T0, typename T1, typename T2 >
-		Vertex(T0&& a0_, T1&& a1_, T2&& a2_) : a0(std::forward< A0 >(a0_)), a1(std::forward< A1 >(a1_)), a2(std::forward< A2 >(a2_)) { }
+		Vertex(T0&& a0_, T1&& a1_, T2&& a2_) : a0(std::forward< T0 >(a0_)), a1(std::forward< T1 >(a1_)), a2(std::forward< T2 >(a2_)) { }
 		Vertex() = default;
 		Vertex(Vertex const &) = default;
 		A0 a0;
