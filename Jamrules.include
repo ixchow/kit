@@ -48,6 +48,9 @@ if $(OS) = NT {
 		/D_USE_MATH_DEFINES /DHAVE_M_PI
 		/DWIN32_LEAN_AND_MEAN
 	;
+	if $(KIT_RAW_SDL_EVENTS) {
+		C++FLAGS += /DKIT_RAW_SDL_EVENTS ;
+	}
 	LINKFLAGS = /nologo /SUBSYSTEM:CONSOLE
 		/LIBPATH:"kit-libs-win/out/lib"
 		/LIBPATH:"kit-libs-win/out/libpng"
@@ -113,6 +116,9 @@ if $(OS) = NT {
 		-I$(KIT_LIBS)/glm/include                              #glm
 		`PATH=$(KIT_LIBS)/SDL2/bin:$PATH sdl2-config --cflags` #SDL2
 		;
+	if $(KIT_RAW_SDL_EVENTS) {
+		C++FLAGS += -DKIT_RAW_SDL_EVENTS ;
+	}
 	LINK = clang++ ;
 	LINKFLAGS = -std=c++14 -g -Wall -Werror ;
 	LINKLIBS =
@@ -146,6 +152,9 @@ if $(OS) = NT {
 		-I$(KIT_LIBS)/glm/include                              #glm
 		`PATH=$(KIT_LIBS)/SDL2/bin:$PATH sdl2-config --cflags` #SDL2
 		;
+	if $(KIT_RAW_SDL_EVENTS) {
+		C++FLAGS += -DKIT_RAW_SDL_EVENTS ;
+	}
 	LINK = g++ ;
 	LINKFLAGS = -std=c++11 -g -Wall -Werror ;
 	LINKLIBS =

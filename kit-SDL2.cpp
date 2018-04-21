@@ -132,6 +132,9 @@ int main(int argc, char **argv) {
 			static SDL_Event evt;
 			kit::Button::clear_events();
 			while (SDL_PollEvent(&evt) == 1 && mode) {
+				#ifdef KIT_RAW_SDL_EVENTS
+				mode->handle_event(evt);
+				#endif
 
 				//Pointer events are handled by kit-SDL2-osx.mm on OSX
 				#ifndef __APPLE__

@@ -35,6 +35,11 @@ namespace kit {
 }
 std::shared_ptr< kit::Mode > kit_mode(); //**YOU MUST DEFINE THIS***
 
+
+#ifdef KIT_RAW_SDL_EVENTS
+union SDL_Event;
+#endif
+
 namespace kit {
 	//command-line arguments. First is the name of the program.
 	// (may not exist on all platforms)
@@ -112,7 +117,12 @@ namespace kit {
 
 		//called just before pointer values change:
 		virtual void pointer_action(PointerID pointer, PointerAction action, Pointer const &old_state, Pointer const &new_state) { }
-
+		
+		//if you want this function, make sure -DKIT_RAW_SDL_EVENTS is passed to all compiled code;
+		//if using the Jamfiles, you can do this by setting KIT_RAW_SDL_EVENTS=1
+		#ifdef KIT_RAW_SDL_EVENTS
+		virtual void handle_event(SDL_Event const &) { }
+		#endif
 	};
 
 
