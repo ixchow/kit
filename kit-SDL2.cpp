@@ -102,6 +102,9 @@ int main(int argc, char **argv) {
 			int w,h;
 			SDL_GetWindowSize(window, &w, &h);
 			window_size = glm::uvec2(w,h);
+			#ifdef KIT_RAW_SDL_EVENTS
+			kit::display.window_size = window_size;
+			#endif
 		}
 		{
 			int w,h;
