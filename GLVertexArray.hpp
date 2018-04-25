@@ -75,12 +75,12 @@ struct GLVertexArray {
 
 		bool unbound = false;
 		for (GLuint l = 0; l < (GLuint)active; ++l) {
-				GLchar name[100];
-				GLint size = 0;
-				GLenum type = 0;
-				glGetActiveAttrib(program, l, 100, NULL, &size, &type, name);
-				name[99] = '\0';
-				GLuint idx = glGetAttribLocation(program, name);
+			GLchar name[100];
+			GLint size = 0;
+			GLenum type = 0;
+			glGetActiveAttrib(program, l, 100, NULL, &size, &type, name);
+			name[99] = '\0';
+			GLuint idx = glGetAttribLocation(program, name);
 
 			if (!bound.count(idx)) {
 				std::cerr << "ERROR: attribute '" << name << "' [" << idx << "] was not bound." << std::endl;
