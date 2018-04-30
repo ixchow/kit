@@ -18,9 +18,9 @@
 #endif //WINDOWS
 
 
-std::string data_path_subdir = "";
+std::string kit::data_path_subdir = "";
 
-std::string get_data_path() {
+static std::string get_data_path() {
 	#if defined(_WIN32)
 	//See: https://stackoverflow.com/questions/1023306/finding-current-executables-path-without-proc-self-exe
 	std::cout << "Fetching path..." << std::endl;
@@ -63,9 +63,9 @@ std::string get_data_path() {
 	#endif
 }
 
-std::string data_path(std::string const &suffix) {
+std::string kit::data_path(std::string const &suffix) {
 	static std::string path = get_data_path();
-	return path + "/" + data_path_subdir + suffix;
+	return path + "/" + kit::data_path_subdir + suffix;
 }
 
 /* From Rktcr; to be used eventually!
@@ -126,7 +126,7 @@ static std::string user_path_dir(std::string const &app_name) {
 }
 */
 
-std::string user_path(std::string const &suffix) {
+std::string kit::user_path(std::string const &suffix) {
 	static std::string path = get_data_path(); //For now, use game directory(!)
 	return path + '/' + suffix;
 }
