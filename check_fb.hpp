@@ -4,7 +4,7 @@
 #include <iostream>
 
 //Helper: throw exception if currently bound framebuffer isn't complete:
-void check_fb() {
+inline void check_fb() {
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status == GL_FRAMEBUFFER_COMPLETE) {
 	} else
