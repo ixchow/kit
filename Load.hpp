@@ -29,7 +29,7 @@
 namespace kit {
 
 enum LoadTag : uint32_t {
-	LoadTagInit = 0, //used for loading mesh and texture blobs before main
+	LoadTagInit = 0, //used for loading mesh and texture blobs before default loading phase
 	LoadTagDefault = 1,
 	LoadTagLate = 2,
 	LoadTagCount = 3
@@ -58,5 +58,15 @@ struct Load {
 
 	T const *value;
 };
+
+//Load< void > just calls a function:
+template< >
+struct Load< void > {
+	//Constructing a Load< T > adds the passed function to the list of functions to call:
+	Load( LoadTag tag, const std::function< void() > &load_fn) {
+		add_load_function(tag, load_fn);
+	}
+};
+
 
 }
