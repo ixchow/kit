@@ -6,9 +6,9 @@
 #include <cassert>
 
 template< typename T >
-void read_chunk(std::istream &from, std::string const &magic, std::vector< T > *_to) {
-	assert(_to);
-	auto &to = *_to;
+void read_chunk(std::istream &from, std::string const &magic, std::vector< T > *to_) {
+	assert(to_);
+	auto &to = *to_;
 
 	struct ChunkHeader {
 		char magic[4] = {'\0', '\0', '\0', '\0'};
@@ -32,4 +32,26 @@ void read_chunk(std::istream &from, std::string const &magic, std::vector< T > *
 	if (!from.read(reinterpret_cast< char * >(&to[0]), to.size() * sizeof(T))) {
 		throw std::runtime_error("Failed to read chunk data.");
 	}
+}
+
+template< typename T >
+void write_chunk(std::string const &magic, std::vector< T > const &from, std::ostream *to_) {
+	assert(magic.size() == 4);
+	assert(to_);
+	auto &to = *to_;
+
+	struct ChunkHeader {
+		char magic[4] = {'\0', '\0', '\0', '\0'};
+		uint32_t size = 0;
+	};
+	static_assert(sizeof(ChunkHeader) == 8, "header is packed");
+	ChunkHeader header;
+	header.magic[0] = magic[0];
+	header.magic[1] = magic[1];
+	header.magic[2] = magic[2];
+	header.magic[3] = magic[3];
+	header.size = from.size() * sizeof(T);
+
+	to.write(reinterpret_cast< const char * >(&header), sizeof(header));
+	to.write(reinterpret_cast< const char * >(from.data()), from.size() * sizeof(T));
 }
