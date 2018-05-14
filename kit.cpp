@@ -24,6 +24,8 @@ std::shared_ptr< kit::Mode > const &kit::get_mode() {
 }
 
 void kit::commit_mode() {
+	if (current_mode == pending_mode) return;
+
 	std::unordered_map< PointerID, Pointer > old_pointers = pointers;
 
 	for (auto p : old_pointers) {
