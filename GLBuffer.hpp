@@ -82,9 +82,17 @@ struct GLAttribBuffer< A0 > : GLBuffer {
 		count = count_;
 		GLBuffer::set(GL_ARRAY_BUFFER, count_ * sizeof(Vertex), data, usage);
 	}
+	void set(GLsizei count_, A0 const *data, GLenum usage) {
+		count = count_;
+		GLBuffer::set(GL_ARRAY_BUFFER, count_ * sizeof(Vertex), data, usage);
+	}
 	void set(std::vector< Vertex > const &data, GLenum usage) {
 		set(data.size(), &data[0], usage);
 	}
+	void set(std::vector< A0 > const &data, GLenum usage) {
+		set(data.size(), &data[0], usage);
+	}
+
 };
 
 template< typename A0, typename A1 >
