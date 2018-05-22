@@ -101,6 +101,9 @@ for obj in bpy.data.objects:
 	obj.select = True
 	bpy.context.scene.objects.active = obj
 
+	#apply all modifiers (?):
+	bpy.ops.object.convert(target='MESH')
+
 	if not filetype.as_lines:
 		#subdivide object's mesh into triangles:
 		bpy.ops.object.mode_set(mode='EDIT')
