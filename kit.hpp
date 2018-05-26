@@ -76,10 +76,10 @@ namespace kit {
 	//Pointer/Touch input is handled through Pointer structures:
 	typedef uint32_t PointerID;
 	enum PointerAction : uint8_t {
-		PointerEnter,
-		PointerLeave,
-		PointerDown,
-		PointerUp,
+		PointerEnter, //enters window/proximity/focus (will start getting Move events)
+		PointerLeave, //left window/proximity/focus (will stop getting Move events)
+		PointerDown, //pressed/touched
+		PointerUp,   //released/lifted
 		PointerMove,
 	};
 	enum PointerButton : uint8_t {
