@@ -41,6 +41,7 @@ filetypes = {
 	".pc" : FileType(b"pc.."),
 	".pt" : FileType(b"pt.."),
 	".pnc" : FileType(b"pnc."),
+	".pct" : FileType(b"pct."),
 	".pnt" : FileType(b"pnt."),
 	".pnct" : FileType(b"pnct"),
 }
