@@ -266,13 +266,14 @@ def write_mesh(mesh, xf=mathutils.Matrix(), do_normal=True, do_color=True, do_uv
 					print("WARNING: clamping vertex with weights:")
 					for bw in bone_weights:
 						print("  " + str(bw[0]) + " for '" + bw[1] + "'")
-					#trim and normalize remaining weights:
+					#trim:
 					bone_weights = bone_weights[0:4]
-					total = 0.0
-					for bw in bone_weights:
-						total += bw[0]
-					for bw in bone_weights:
-						bw[0] /= total
+				#normalize remaining weights:
+				total = 0.0
+				for bw in bone_weights:
+					total += bw[0]
+				for bw in bone_weights:
+					bw[0] /= total
 				if len(bone_weights) == 0:
 					print("WARNING: vertex with no bone weights.")
 
