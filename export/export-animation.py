@@ -33,10 +33,26 @@ bpy.ops.wm.open_mainfile(filepath=infile)
 
 #Find the object and its armature:
 obj = bpy.data.objects[object_name]
-armature = obj.find_armature()
 
-bpy.context.scene.layers = obj.layers
-obj.hide = False
+objs = []
+
+if obj.type == 'ARMATURE':
+	print(object_name + " is an armature; exporting all objects that reference it:")
+	armature = obj
+	for o in bpy.data.objects:
+		if o.type == 'MESH' and o.find_armature() == armature:
+			print("  '" + o.name + "'")
+			objs.append(o)
+elif obj.type == 'MESH':
+	objs.append(obj)
+	armature = obj.find_armature()
+else:
+	print("Unknown object type '" + obj.type + "'")
+
+bpy.context.scene.layers = armature.layers
+armature.hide = False
+for obj in objs:
+	obj.hide = False
 
 #-----------------------------
 #write out appropriate data:
@@ -183,22 +199,6 @@ for action_name in real_action_names:
 #----------------------------
 #Extract animated mesh (==> vertex groups and weights)
 
-#Get a copy of the mesh in the rest pose:
-armature.data.pose_position = 'REST'
-bpy.context.scene.update()
-mesh = obj.to_mesh(bpy.context.scene, True, 'RENDER')
-
-#Triangulate the mesh:
-# from: https://blender.stackexchange.com/questions/45698/triangulate-mesh-in-python
-bm = bmesh.new()
-bm.from_mesh(mesh)
-bmesh.ops.triangulate(bm, faces=bm.faces[:], quad_method=3, ngon_method=1)
-bm.to_mesh(mesh)
-bm.free()
-
-#compute normals (respecting face smoothing):
-mesh.calc_normals_split()
-
 vertex_data = b''
 
 #Write mesh vertices to vertex_data, return packed (begin,end) range
@@ -286,11 +286,28 @@ def write_mesh(mesh, xf=mathutils.Matrix(), do_normal=True, do_color=True, do_uv
 					idx = struct.unpack('I', bone_name_to_idx[bw[1]])[0]
 					vertex_data += struct.pack('I', idx)
 
-obj_to_arm = armature.matrix_world.copy()
-obj_to_arm.invert()
-obj_to_arm = obj_to_arm * obj.matrix_world
+for obj in objs:
+	#Get a copy of the mesh in the rest pose:
+	armature.data.pose_position = 'REST'
+	bpy.context.scene.update()
+	mesh = obj.to_mesh(bpy.context.scene, True, 'RENDER')
 
-write_mesh(mesh, xf=obj_to_arm)
+	#Triangulate the mesh:
+	# from: https://blender.stackexchange.com/questions/45698/triangulate-mesh-in-python
+	bm = bmesh.new()
+	bm.from_mesh(mesh)
+	bmesh.ops.triangulate(bm, faces=bm.faces[:], quad_method=3, ngon_method=1)
+	bm.to_mesh(mesh)
+	bm.free()
+
+	#compute normals (respecting face smoothing):
+	mesh.calc_normals_split()
+
+	obj_to_arm = armature.matrix_world.copy()
+	obj_to_arm.invert()
+	obj_to_arm = obj_to_arm * obj.matrix_world
+
+	write_mesh(mesh, xf=obj_to_arm)
 
 #----------------------------
 #Write final animation file
