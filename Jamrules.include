@@ -108,6 +108,7 @@ if $(OS) = NT {
 #- - - - - - - - - - - - - - - -
 } else if $(OS) = MACOSX {
 	KIT_LIBS = kit-libs-osx ;
+	CC = clang ;
 	C++ = clang++ ;
 	C++FLAGS =
 		-std=c++14 -g -Wall -Werror
@@ -144,6 +145,7 @@ if $(OS) = NT {
 #- - - - - - - - - - - - - - - -
 } else if $(OS) = LINUX {
 	KIT_LIBS = kit-libs-linux ;
+	CC = gcc ;
 	C++ = g++ ;
 	C++FLAGS =
 		-std=c++11 -g -Wall -Werror
