@@ -19,6 +19,7 @@ namespace kit {
 	struct Config {
 		//requested context:
 		glm::uvec2 size = glm::uvec2(100, 100);
+		bool resizable = true; 
 		//requested window title:
 		std::string title = "kit2";
 		//desired time between frames in various states:

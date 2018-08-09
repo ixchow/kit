@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
 		kit_config.title.c_str(),
 		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		kit_config.size.x, kit_config.size.y,
-		SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE
+		SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI | (kit_config.resizable ? SDL_WINDOW_RESIZABLE : 0)
 	);
 
 	if (!window) {
