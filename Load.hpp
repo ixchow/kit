@@ -38,10 +38,14 @@ enum LoadTag : uint32_t {
 void add_load_function(LoadTag tag, std::function< void() > const &fn);
 void call_load_functions(); //called by main() after GL context created.
 
+//work-around for MSVC not accepting this as a lambda:
+template< typename T >
+T const *new_T() { return new T; }
+
 template< typename T >
 struct Load {
 	//Constructing a Load< T > adds the passed function to the list of functions to call:
-	Load( LoadTag tag, const std::function< T const *() > &load_fn = []()->T const *{ return new T; } ) : value(nullptr) {
+	Load(LoadTag tag, const std::function< T const *() > &load_fn = new_T< T >) : value(nullptr) {
 		add_load_function(tag, [this,load_fn](){
 			this->value = load_fn();
 			if (!(this->value)) {
