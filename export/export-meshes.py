@@ -24,6 +24,8 @@ if m:
 	layer = int(m.group(2))
 outfile = args[1]
 
+assert layer >= 1 and layer <= 20
+
 print("Will export meshes referenced from layer " + str(layer) + " of '" + infile + "' to '" + outfile + "'.")
 
 class FileType:
@@ -75,7 +77,7 @@ bpy.ops.wm.open_mainfile(filepath=infile)
 #meshes to write:
 to_write = set()
 for obj in bpy.data.objects:
-	if obj.layers[layer] and obj.type == 'MESH':
+	if obj.layers[layer-1] and obj.type == 'MESH':
 		to_write.add(obj.data)
 
 #data contains vertex and normal data from the meshes:
