@@ -3,9 +3,9 @@
 #based on 'export-sprites.py' and 'glsprite.py' from TCHOW Rainbow; code used is released into the public domain.
 
 #Note: Script meant to be executed from within blender, as per:
-#blender --background --python export-meshes.py -- <infile.blend> <outfile.scene>
+#blender --background --python export-meshes.py -- <infile.blend>[:layer] <outfile.scene>
 
-import sys
+import sys,re
 
 args = []
 for i in range(0,len(sys.argv)):
@@ -13,11 +13,20 @@ for i in range(0,len(sys.argv)):
 		args = sys.argv[i+1:]
 
 if len(args) != 2:
-	print("\n\nUsage:\nblender --background --python export-meshes.py -- <infile.blend> <outfile.scene>\nExports the transforms of objects in layer 1 to a binary blob, indexed by the names of the objects that reference them.\n")
+	print("\n\nUsage:\nblender --background --python export-meshes.py -- <infile.blend>[:layer] <outfile.scene>\nExports the transforms of objects in layer layer (default 1) to a binary blob, indexed by the names of the objects that reference them.\n")
 	exit(1)
 
 infile = args[0]
+layer = 1
+m = re.match(r'^(.*):(\d+)$', infile)
+if m:
+	infile = m.group(1)
+	layer = int(m.group(2))
 outfile = args[1]
+
+assert layer >= 1 and layer <= 20
+
+print("Will export transforms from layer " + str(layer) + " of '" + infile + "' to '" + outfile + "'.")
 
 import bpy
 import struct
@@ -30,7 +39,7 @@ bpy.ops.wm.open_mainfile(filepath=infile)
 
 to_write = []
 for obj in bpy.data.objects:
-	if obj.layers[0] == False: continue
+	if obj.layers[layer-1] == False: continue
 	if obj.type != 'MESH': continue
 	to_write.append(obj.name)
 
@@ -65,6 +74,7 @@ blob.write(strings)
 blob.write(struct.pack('4s',b'scn0')) #type
 blob.write(struct.pack('I', len(scene))) #length
 blob.write(scene)
-
-print("Wrote " + str(blob.tell()) + " bytes to '" + outfile + "'")
+wrote = blob.tell()
 blob.close()
+
+print("Wrote " + str(wrote) + " bytes to '" + outfile + "'")

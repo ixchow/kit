@@ -3,22 +3,28 @@
 #based on 'export-sprites.py' and 'glsprite.py' from TCHOW Rainbow; code used is released into the public domain.
 
 #Note: Script meant to be executed from within blender, as per:
-#blender --background --python export-meshes.py -- <infile.blend> <L> <outfile.p[n][c][t]>
+#blender --background --python export-meshes.py -- <infile.blend>[:layer] <outfile.p[n][c][t]>
 
-import sys
+import sys,re
 
 args = []
 for i in range(0,len(sys.argv)):
 	if sys.argv[i] == '--':
 		args = sys.argv[i+1:]
 
-if len(args) != 3:
-	print("\n\nUsage:\nblender --background --python export-meshes.py -- <infile.blend> <layer> <outfile.p[n][c][t][l]>\nExports the meshes referenced by all objects in layer to a binary blob, indexed by the names of the objects that reference them. If 'l' is specified in the file extension, only mesh edges will be exported.\n")
+if len(args) != 2:
+	print("\n\nUsage:\nblender --background --python export-meshes.py -- <infile.blend>[:layer] <outfile.p[n][c][t][l]>\nExports the meshes referenced by all objects in layer (default 1) to a binary blob, indexed by the names of the objects that reference them. If 'l' is specified in the file extension, only mesh edges will be exported.\n")
 	exit(1)
 
 infile = args[0]
-layer = int(args[1])
-outfile = args[2]
+layer = 1
+m = re.match(r'^(.*):(\d+)$', infile)
+if m:
+	infile = m.group(1)
+	layer = int(m.group(2))
+outfile = args[1]
+
+print("Will export meshes referenced from layer " + str(layer) + " of '" + infile + "' to '" + outfile + "'.")
 
 class FileType:
 	def __init__(self, magic, as_lines = False):
@@ -66,7 +72,7 @@ import argparse
 
 bpy.ops.wm.open_mainfile(filepath=infile)
 
-#names of meshes to write:
+#meshes to write:
 to_write = set()
 for obj in bpy.data.objects:
 	if obj.layers[layer] and obj.type == 'MESH':
@@ -201,7 +207,7 @@ blob.write(strings)
 blob.write(struct.pack('4s',b'idx0')) #type
 blob.write(struct.pack('I', len(index))) #length
 blob.write(index)
-
-print("Wrote " + str(blob.tell()) + " bytes [== " + str(len(data)+8) + " bytes of data + " + str(len(strings)+8) + " bytes of strings + " + str(len(index)+8) + " bytes of index] to '" + outfile + "'")
-
+wrote = blob.tell()
 blob.close()
+
+print("Wrote " + str(wrote) + " bytes [== " + str(len(data)+8) + " bytes of data + " + str(len(strings)+8) + " bytes of strings + " + str(len(index)+8) + " bytes of index] to '" + outfile + "'")
