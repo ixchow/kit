@@ -13,7 +13,7 @@ for i in range(0,len(sys.argv)):
 		args = sys.argv[i+1:]
 
 if len(args) != 3:
-	print("\n\nUsage:\nblender --background --python export-meshes.py -- <infile.blend> <layer> <outfile.p[n][c][t][l]>\nExports the meshes referenced by all objects to a binary blob, indexed by the names of the objects that reference them. If 'l' is specified in the file extension, only mesh edges will be exported.\n")
+	print("\n\nUsage:\nblender --background --python export-meshes.py -- <infile.blend> <layer> <outfile.p[n][c][t][l]>\nExports the meshes referenced by all objects in layer to a binary blob, indexed by the names of the objects that reference them. If 'l' is specified in the file extension, only mesh edges will be exported.\n")
 	exit(1)
 
 infile = args[0]
