@@ -7,6 +7,7 @@
 #include "gl_shims.hpp"
 #undef max
 #undef min
+#undef near
 #else
 #define GL_GLEXT_PROTOTYPES 1
 #include "glcorearb.h"
