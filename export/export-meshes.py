@@ -148,6 +148,7 @@ for obj in bpy.data.objects:
 		else:
 			uvs = obj.data.uv_layers.active.data
 
+	mesh_data = b''
 	if not filetype.as_lines:
 		#write the mesh triangles:
 		for poly in mesh.polygons:
@@ -157,22 +158,22 @@ for obj in bpy.data.objects:
 				loop = mesh.loops[poly.loop_indices[i]]
 				vertex = mesh.vertices[loop.vertex_index]
 				for x in vertex.co:
-					data += struct.pack('f', x)
+					mesh_data += struct.pack('f', x)
 				if filetype.normal:
 					for x in loop.normal:
-						data += struct.pack('f', x)
+						mesh_data += struct.pack('f', x)
 				if filetype.color:
 					if colors != None:
 						col = colors[poly.loop_indices[i]].color
-						data += struct.pack('BBBB', int(col.r * 255), int(col.g * 255), int(col.b * 255), 255)
+						mesh_data += struct.pack('BBBB', int(col.r * 255), int(col.g * 255), int(col.b * 255), 255)
 					else:
-						data += struct.pack('BBBB', 255, 255, 255, 255)
+						mesh_data += struct.pack('BBBB', 255, 255, 255, 255)
 				if filetype.texcoord:
 					if uvs != None:
 						uv = uvs[poly.loop_indices[i]].uv
-						data += struct.pack('ff', uv.x, uv.y)
+						mesh_data += struct.pack('ff', uv.x, uv.y)
 					else:
-						data += struct.pack('ff', 0, 0)
+						mesh_data += struct.pack('ff', 0, 0)
 		vertex_count += len(mesh.polygons) * 3
 	else:
 		#write the mesh edges:
@@ -181,12 +182,13 @@ for obj in bpy.data.objects:
 			for i in range(0,2):
 				vertex = mesh.vertices[edge.vertices[i]]
 				for x in vertex.co:
-					data += struct.pack('f', x)
+					mesh_data += struct.pack('f', x)
 				#None of these are unique on edges:
 				assert(not filetype.normal)
 				assert(not filetype.color)
 				assert(not filetype.texcoord)
 		vertex_count += len(mesh.edges) * 2
+	data += mesh_data
 
 	#count:
 	index += struct.pack('I', vertex_count - start)
