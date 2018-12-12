@@ -82,6 +82,23 @@ MeshBuffer::MeshBuffer(std::string const &filename) {
 		Color = buffer[2];
 
 		this->buffer = std::move(buffer);
+	} else if (endswith(".pnct")) {
+		GLAttribBuffer< glm::vec3, glm::vec3, glm::u8vec4, glm::vec2 > buffer;
+		std::vector< decltype(buffer)::Vertex > data;
+		read_chunk(file, "pnct", &data);
+
+		//upload data:
+		buffer.set(data, GL_STATIC_DRAW);
+
+		total = data.size(); //store total for later checks on index
+
+		//store attrib locations:
+		Position = buffer[0];
+		Normal = buffer[1];
+		Color = buffer[2];
+		TexCoord = buffer[3];
+
+		this->buffer = std::move(buffer);
 	} else {
 		throw std::runtime_error("Unknown file type '" + filename + "'");
 	}
