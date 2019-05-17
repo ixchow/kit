@@ -6,18 +6,25 @@
 #include <typeinfo>
 
 struct TagValueArg {
+	enum RequiredOrOptional {
+		Required,
+		Optional
+	};
+
 	TagValueArg(
 		std::string const &tag_,
 		std::function< bool(std::string const &, std::string *) > const &parse_,
 		std::function< bool(std::string *) > const &check_,
-		std::string const &help_) : tag(tag_), parse(parse_), check(check_), help(help_) {
+		std::string const &help_,
+		RequiredOrOptional required_)
+			: tag(tag_), parse(parse_), check(check_), help(help_), required(required_) {
 	}
 	static bool dont_check(std::string *err) {
 		assert(err);
 		return false;
 	}
 	template< typename T >
-	static TagValueArg simple(std::string const &tag_, T *value, std::string const &help_) {
+	static TagValueArg simple(std::string const &tag_, T *value, std::string const &help_, RequiredOrOptional req_ = Optional) {
 		return TagValueArg(
 			tag_,
 			[value](std::string const &arg, std::string *err) -> bool {
@@ -35,9 +42,10 @@ struct TagValueArg {
 				return true;
 			},
 			dont_check,
-			help_);
+			help_,
+			req_);
 	}
-	static TagValueArg simple(std::string const &tag_, std::string *value, std::string const &help_) {
+	static TagValueArg simple(std::string const &tag_, std::string *value, std::string const &help_, RequiredOrOptional req_ = Optional) {
 		return TagValueArg(
 			tag_,
 			[value](std::string const &arg, std::string *err) -> bool {
@@ -46,14 +54,15 @@ struct TagValueArg {
 				return true;
 			},
 			dont_check,
-			help_);
+			help_,
+			req_);
 	}
-
 
 	std::string tag;
 	std::function< bool(std::string const &, std::string *) > parse;
 	std::function< bool(std::string *) > check;
 	std::string help;
+	RequiredOrOptional required;
 };
 
 
@@ -63,6 +72,8 @@ struct TagValueArgs : std::vector< TagValueArg > {
 		assert(errs);
 		*errs = "";
 		bool have_errs = false;
+		std::vector< bool > parsed(this->size(), false);
+
 		for (; begin != end; ++begin) {
 			std::string tag = *begin;
 			std::string value = "";
@@ -76,6 +87,7 @@ struct TagValueArgs : std::vector< TagValueArg > {
 			bool found = false;
 			for (auto const &arg : *this) {
 				if (arg.tag == tag) {
+					parsed[&arg - this->data()] = true;
 					found = true;
 					std::string err;
 					if (!arg.parse(value, &err)) {
@@ -96,6 +108,16 @@ struct TagValueArgs : std::vector< TagValueArg > {
 					errs += '\n';
 				}
 				*errs += "Invalid Tag: '" + tag + "'";
+			}
+		}
+		for (uint32_t i = 0; i < this->size(); ++i) {
+			if (!parsed[i] && (*this)[i].required == TagValueArg::Required) {
+				if (!have_errs) {
+					have_errs = true;
+				} else {
+					errs += '\n';
+				}
+				*errs += "Missing Required Argument: '" + (*this)[i].tag + "'";
 			}
 		}
 		return !have_errs;
