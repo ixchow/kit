@@ -18,6 +18,10 @@ local NAMES =
 	load_save_png.cpp
 	;
 
+if $(KIT_USE_JPEG) = 1 {
+	NAMES += load_save_jpeg.cpp ;
+}
+
 if $(OS) = NT {
 	NAMES += gl_shims.cpp ;
 }
