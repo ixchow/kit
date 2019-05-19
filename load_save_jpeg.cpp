@@ -77,8 +77,12 @@ void throw_error_exit(j_common_ptr cinfo) {
 	cinfo->err->format_message(cinfo, &buffer[0]);
 	throw std::runtime_error("libjpeg reports '" + std::string(buffer.data()) + "'");
 }
-
 bool load_jpeg(std::string filename, unsigned int *width_, unsigned int *height_, std::vector< uint32_t > *data_, OriginLocation origin) {
+	std::ifstream in_stream(filename, std::ios::binary);
+	return load_jpeg(in_stream, width_, height_, data_, origin);
+}
+
+bool load_jpeg(std::istream &in_stream, unsigned int *width_, unsigned int *height_, std::vector< uint32_t > *data_, OriginLocation origin) {
 	assert(width_);
 	auto &width = *width_;
 	assert(height_);
@@ -89,8 +93,6 @@ bool load_jpeg(std::string filename, unsigned int *width_, unsigned int *height_
 	width = 0;
 	height = 0;
 	data.clear();
-
-	std::ifstream in_stream(filename, std::ios::binary);
 	
 	//Based on https://github.com/libjpeg-turbo/libjpeg-turbo/blob/master/libjpeg.txt
 	
@@ -147,7 +149,7 @@ bool load_jpeg(std::string filename, unsigned int *width_, unsigned int *height_
 	} catch (std::exception &e) {
 		jpeg_destroy_decompress(&cinfo);
 
-		std::cout << "Error loading '" << filename << "': " << e.what() << std::endl;
+		std::cout << "Error loading: " << e.what() << std::endl;
 		return false;
 	}
 }
