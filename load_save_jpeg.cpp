@@ -34,7 +34,7 @@ struct stream_source_mgr : jpeg_source_mgr {
 		}
 		rdbuf->sgetc(); //look at current character; will trigger underflow()
 		std::streamsize avail = rdbuf->in_avail();
-		if (avail == 0) {
+		if (avail <= 0) {
 			ERREXIT( cinfo, JERR_FILE_READ );
 		}
 		buffer.resize(avail);
@@ -70,6 +70,14 @@ struct stream_source_mgr : jpeg_source_mgr {
 	}
 };
 
+//error handler (looooosely) based on libjpeg example.c:
+
+void throw_error_exit(j_common_ptr cinfo) {
+	std::vector< char > buffer(JMSG_LENGTH_MAX);
+	cinfo->err->format_message(cinfo, &buffer[0]);
+	throw std::runtime_error("libjpeg reports '" + std::string(buffer.data()) + "'");
+}
+
 bool load_jpeg(std::string filename, unsigned int *width_, unsigned int *height_, std::vector< uint32_t > *data_, OriginLocation origin) {
 	assert(width_);
 	auto &width = *width_;
@@ -83,60 +91,65 @@ bool load_jpeg(std::string filename, unsigned int *width_, unsigned int *height_
 	data.clear();
 
 	std::ifstream in_stream(filename, std::ios::binary);
-
-
+	
 	//Based on https://github.com/libjpeg-turbo/libjpeg-turbo/blob/master/libjpeg.txt
-
+	
 	struct jpeg_decompress_struct cinfo;
 	struct jpeg_error_mgr jerr;
-	
-	//TODO: Error manager w/ setjmp/longjmp
-
+		
 	cinfo.err = jpeg_std_error(&jerr);
+	jerr.error_exit = throw_error_exit;
 	jpeg_create_decompress(&cinfo);
-
-	//set data source to in_stream:
-	stream_source_mgr src(&cinfo, in_stream);
-
-	//read header:
-	jpeg_read_header(&cinfo, TRUE);
-
-	//note -- convert colorspace to RGBA:
-	cinfo.out_color_space = JCS_EXT_RGBA;
-
-	//decompression:
-
-	jpeg_start_decompress(&cinfo);
-
-	width = cinfo.output_width;
-	height = cinfo.output_height;
-	data.resize(width * height);
-
-	std::vector< JSAMPROW > row_ptrs;
-	row_ptrs.reserve(height);
-
-	static_assert(sizeof(JSAMPLE) == 1, "libjpeg samples should be one byte.");
-	if (origin == UpperLeftOrigin) {
-		for (uint32_t r = 0; r < height; ++r) {
-			row_ptrs.emplace_back(reinterpret_cast< JSAMPLE * >(&data[r*width]));
-		}
-	} else if (origin == LowerLeftOrigin) {
-		for (uint32_t r = 0; r < height; ++r) {
-			row_ptrs.emplace_back(reinterpret_cast< JSAMPLE * >(&data[(height-1-r)*width]));
-		}
-	} else {
-		assert(false && "Invalid origin.");
-	}
-
-	while (cinfo.output_scanline < height) {
-		jpeg_read_scanlines(&cinfo, &row_ptrs[cinfo.output_scanline], height - cinfo.output_scanline);
-	}
-	jpeg_finish_decompress(&cinfo);
 	
-	//clean up:
-	jpeg_destroy_decompress(&cinfo);
+	try {
+		//set data source to in_stream:
+		stream_source_mgr src(&cinfo, in_stream);
+	
+		//read header:
+		jpeg_read_header(&cinfo, TRUE);
+	
+		//note -- convert colorspace to RGBA:
+		cinfo.out_color_space = JCS_EXT_RGBA;
+	
+		//decompression:
+	
+		jpeg_start_decompress(&cinfo);
+	
+		width = cinfo.output_width;
+		height = cinfo.output_height;
+		data.resize(width * height);
+	
+		std::vector< JSAMPROW > row_ptrs;
+		row_ptrs.reserve(height);
+	
+		static_assert(sizeof(JSAMPLE) == 1, "libjpeg samples should be one byte.");
+		if (origin == UpperLeftOrigin) {
+			for (uint32_t r = 0; r < height; ++r) {
+				row_ptrs.emplace_back(reinterpret_cast< JSAMPLE * >(&data[r*width]));
+			}
+		} else if (origin == LowerLeftOrigin) {
+			for (uint32_t r = 0; r < height; ++r) {
+				row_ptrs.emplace_back(reinterpret_cast< JSAMPLE * >(&data[(height-1-r)*width]));
+			}
+		} else {
+			assert(false && "Invalid origin.");
+		}
+	
+		while (cinfo.output_scanline < height) {
+			jpeg_read_scanlines(&cinfo, &row_ptrs[cinfo.output_scanline], height - cinfo.output_scanline);
+		}
+		jpeg_finish_decompress(&cinfo);
+		
+		//clean up:
+		jpeg_destroy_decompress(&cinfo);
+	
+		return true;
+	} catch (std::exception &e) {
+		jpeg_destroy_decompress(&cinfo);
 
-	return true;
+		std::cout << "Error loading '" << filename << "': " << e.what() << std::endl;
+		return false;
+	}
 }
 
 
