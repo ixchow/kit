@@ -94,7 +94,7 @@ struct TagValueArgs : std::vector< TagValueArg > {
 						if (!have_errs) {
 							have_errs = true;
 						} else {
-							errs += '\n';
+							*errs += '\n';
 						}
 						*errs += tag + " Parse Error:" + err;
 					}
@@ -105,7 +105,7 @@ struct TagValueArgs : std::vector< TagValueArg > {
 				if (!have_errs) {
 					have_errs = true;
 				} else {
-					errs += '\n';
+					*errs += '\n';
 				}
 				*errs += "Invalid Tag: '" + tag + "'";
 			}
@@ -115,7 +115,7 @@ struct TagValueArgs : std::vector< TagValueArg > {
 				if (!have_errs) {
 					have_errs = true;
 				} else {
-					errs += '\n';
+					*errs += '\n';
 				}
 				*errs += "Missing Required Argument: '" + (*this)[i].tag + "'";
 			}
