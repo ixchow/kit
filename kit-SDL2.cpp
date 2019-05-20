@@ -72,6 +72,42 @@ int main(int argc, char **argv) {
 		}
 	}
 
+	glm::uvec2 window_size = glm::uvec2(0,0);
+	auto update_window_size = [&]() {
+		int w,h;
+		SDL_GetWindowSize(window, &w, &h);
+		window_size = glm::uvec2(w,h);
+		#ifdef KIT_RAW_SDL_EVENTS
+		kit::display.window_size = window_size;
+		#endif
+	};
+	update_window_size();
+
+	auto update_drawable_size = [&]() {
+		int w,h;
+		SDL_GL_GetDrawableSize(window, &w, &h);
+		glm::uvec2 size = glm::uvec2(w,h);
+		if (size != kit::display.size) {
+			kit::display.size = size;
+			if (size.y != 0) {
+				kit::display.aspect = float(size.x) / float(size.y);
+			} else {
+				kit::display.aspect = 1.0f;
+			}
+			kit::display.pixel_ratio = float(size.x) / float(window_size.x);
+			//TODO: look these up somehow!
+			kit::display.DPI = 90.0f * kit::display.pixel_ratio;
+			kit::display.IPD = 1.0f / kit::display.DPI;
+			return true;
+		} else {
+			return false;
+		}
+	};
+	update_drawable_size();
+
+	/*std::cout << "Display size: " << kit::display.size.x << " x " << kit::display.size.y << std::endl;
+	std::cout << "Display aspect: " << kit::display.aspect << std::endl;*/
+
 	kit::set_mode(kit_mode());
 	kit::commit_mode();
 
@@ -80,8 +116,6 @@ int main(int argc, char **argv) {
 	#ifndef __APPLE__
 	const kit::PointerID MouseID = 1;
 	#endif
-
-	glm::uvec2 window_size = glm::uvec2(0,0);
 
 	#ifdef __APPLE__
 	{
@@ -98,35 +132,13 @@ int main(int argc, char **argv) {
 	while (mode) {
 		SDL_GL_MakeCurrent(window, context);
 
-		{
-			int w,h;
-			SDL_GetWindowSize(window, &w, &h);
-			window_size = glm::uvec2(w,h);
-			#ifdef KIT_RAW_SDL_EVENTS
-			kit::display.window_size = window_size;
-			#endif
-		}
-		{
-			int w,h;
-			SDL_GL_GetDrawableSize(window, &w, &h);
-			glm::uvec2 size = glm::uvec2(w,h);
-			if (size != kit::display.size) {
-				kit::display.size = size;
-				if (size.y != 0) {
-					kit::display.aspect = float(size.x) / float(size.y);
-				} else {
-					kit::display.aspect = 1.0f;
-				}
-				kit::display.pixel_ratio = float(size.x) / float(window_size.x);
-				//TODO: look these up somehow!
-				kit::display.DPI = 90.0f * kit::display.pixel_ratio;
-				kit::display.IPD = 1.0f / kit::display.DPI;
+		update_window_size();
 
-				glViewport(0,0,size.x,size.y);
-				if (mode) {
-					mode->resized();
-					kit::commit_mode();
-				}
+		if (update_drawable_size()) {
+			glViewport(0,0,kit::display.size.x,kit::display.size.y);
+			if (mode) {
+				mode->resized();
+				kit::commit_mode();
 			}
 		}
 
