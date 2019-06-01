@@ -57,6 +57,11 @@ if $(OS) = NT {
 		/LIBPATH:"kit-libs-win/out/zlib"
 	;
 	LINKLIBS = SDL2main.lib SDL2.lib OpenGL32.lib libpng.lib zlib.lib ;
+	if $(KIT_USE_JPEG) {
+		C++FLAGS += /I"kit-libs-win/out/libjpeg" ;
+		LINKFLAGS += /LIBPATH:"kit-libs-win/out/libjpeg" ;
+		LINKLIBS += jpeg-static.lib ;
+	}
 
 	File dist$(SEP)SDL2.dll : kit-libs-win$(SEP)out$(SEP)dist$(SEP)SDL2.dll ;
 	File dist$(SEP)README-SDL.txt : kit-libs-win$(SEP)out$(SEP)dist$(SEP)README-SDL.txt ;

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <cassert>
+#include <algorithm>
 
 struct stream_source_mgr : jpeg_source_mgr {
 	std::istream &stream;
