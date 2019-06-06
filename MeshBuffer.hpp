@@ -2,6 +2,7 @@
 
 #include "GLBuffer.hpp"
 
+#include <string>
 #include <map>
 
 //"MeshBuffer" holds a collection of meshes loaded from a file
