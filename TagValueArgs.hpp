@@ -125,7 +125,11 @@ struct TagValueArgs : std::vector< TagValueArg > {
 	std::string usage(std::string const &command) const {
 		std::string u = "Usage:\n\t" + command;
 		for (auto const &arg : *this) {
-			u += " [" + arg.tag + "]";
+			if (arg.required == TagValueArg::Required) {
+				u += " <" + arg.tag + ":...>";
+			} else {
+				u += " [" + arg.tag + ":...]";
+			}
 		}
 		for (auto const &arg : *this) {
 			u += '\n';
