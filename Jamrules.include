@@ -153,7 +153,7 @@ if $(OS) = NT {
 	CC = gcc ;
 	C++ = g++ ;
 	C++FLAGS =
-		-std=c++11 -g -Wall -Werror
+		-std=c++14 -g -Wall -Werror
 		-I$(KIT_LIBS)/libpng/include                           #libpng
 		-DGLM_ENABLE_EXPERIMENTAL
 		-I$(KIT_LIBS)/glm/include                              #glm
@@ -163,7 +163,7 @@ if $(OS) = NT {
 		C++FLAGS += -DKIT_RAW_SDL_EVENTS ;
 	}
 	LINK = g++ ;
-	LINKFLAGS = -std=c++11 -g -Wall -Werror ;
+	LINKFLAGS = -std=c++14 -g -Wall -Werror ;
 	LINKLIBS =
 		-L$(KIT_LIBS)/libpng/lib -lpng                      #libpng
 		-L$(KIT_LIBS)/zlib/lib -lz                          #zlib
