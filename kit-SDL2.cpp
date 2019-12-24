@@ -14,6 +14,9 @@
 #include <chrono>
 
 int main(int argc, char **argv) {
+#ifdef _WIN32
+	try {
+#endif
 	kit::args.resize(argc);
 	for (int arg = 0; arg < argc; ++arg) {
 		kit::args[arg] = argv[arg];
@@ -245,6 +248,13 @@ int main(int argc, char **argv) {
 
 	SDL_GL_DeleteContext(context);
 	SDL_DestroyWindow(window);
+
+#ifdef _WIN32
+	} catch (std::exception &e) {
+		std::cerr << "Exception: " << e.what() << std::endl;
+		throw e;
+	}
+#endif
 
 	return 0;
 }
