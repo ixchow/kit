@@ -44,12 +44,48 @@ int main(int argc, char **argv) {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
 
-	SDL_Window *window = SDL_CreateWindow(
-		kit_config.title.c_str(),
-		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-		kit_config.size.x, kit_config.size.y,
-		SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI | (kit_config.resizable ? SDL_WINDOW_RESIZABLE : 0)
-	);
+	SDL_Window *window;
+	if (kit_config.fullscreen) {
+		window = SDL_CreateWindow(
+			kit_config.title.c_str(),
+			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+			100, 100,
+			SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI
+		);
+
+		SDL_DisplayMode want;
+		want.w = kit_config.size.x;
+		want.h = kit_config.size.y;
+		want.refresh_rate = 0;
+		want.driverdata = 0;
+		want.format = 0;
+
+		SDL_DisplayMode got;
+		if (!SDL_GetClosestDisplayMode(0, &want, &got)) {
+			throw std::runtime_error("Failed to set fullscreen mode.");
+		}
+		std::cout << "Got " << got.w << " x " << got.h << " @ " << got.refresh_rate << "Hz." << std::endl;
+		if (0 != SDL_SetWindowDisplayMode(window, &got)) {
+			throw std::runtime_error(std::string("Failed to set display mode: ") + SDL_GetError());
+		}
+
+		SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+
+		int w,h;
+		SDL_GetWindowSize(window, &w, &h);
+		std::cout << "Window size is " << w << "x" << h << std::endl;
+		SDL_GL_GetDrawableSize(window, &w, &h);
+		std::cout << "Drawable size is " << w << "x" << h << std::endl;
+
+	} else {
+		window = SDL_CreateWindow(
+			kit_config.title.c_str(),
+			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+			kit_config.size.x, kit_config.size.y,
+			SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI
+			| (kit_config.resizable ? SDL_WINDOW_RESIZABLE : 0)
+		);
+	}
 
 	if (!window) {
 		throw std::runtime_error(std::string("Error creating SDL window: ") + SDL_GetError());
