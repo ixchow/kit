@@ -415,4 +415,96 @@ struct GLAttribBuffer< A0, A1, A2, A3, A4, A5 > : GLBuffer {
 	}
 };
 
+template< typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6 >
+struct GLAttribBuffer< A0, A1, A2, A3, A4, A5, A6 > : GLBuffer {
+	GLsizei count = 0;
+
+	struct Vertex {
+		template< typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6 >
+		Vertex(T0 &&a0_, T1 &&a1_, T2 &&a2_, T3 &&a3_, T4 &&a4_, T5 &&a5_, T6 &&a6_) : a0(std::forward< T0 >(a0_)), a1(std::forward< T1 >(a1_)), a2(std::forward< T2 >(a2_)), a3(std::forward< T3 >(a3_)), a4(std::forward< T4 >(a4_)), a5(std::forward< T5 >(a5_)), a6(std::forward< T6 >(a6_)) { }
+		Vertex() = default;
+		Vertex(Vertex const &) = default;
+		A0 a0;
+		A1 a1;
+		A2 a2;
+		A3 a3;
+		A4 a4;
+		A5 a5;
+		A6 a6;
+	};
+	static_assert(sizeof(Vertex) == sizeof(A0) + sizeof(A1) + sizeof(A2) + sizeof(A3) + sizeof(A4) + sizeof(A5) + sizeof(A6), "Vertex is packed.");
+
+	GLAttribPointer operator[](uint32_t idx) const {
+		if (idx == 0) {
+			return GLAttribPointer(buffer,
+				GLTypeInfo< A0 >::size,
+				GLTypeInfo< A0 >::type,
+				GLTypeInfo< A0 >::interpretation,
+				sizeof(Vertex),
+				0
+			);
+		} else if (idx == 1) {
+			return GLAttribPointer(buffer,
+				GLTypeInfo< A1 >::size,
+				GLTypeInfo< A1 >::type,
+				GLTypeInfo< A1 >::interpretation,
+				sizeof(Vertex),
+				0 + sizeof(A0)
+			);
+		} else if (idx == 2) {
+			return GLAttribPointer(buffer,
+				GLTypeInfo< A2 >::size,
+				GLTypeInfo< A2 >::type,
+				GLTypeInfo< A2 >::interpretation,
+				sizeof(Vertex),
+				0 + sizeof(A0) + sizeof(A1)
+			);
+		} else if (idx == 3) {
+			return GLAttribPointer(buffer,
+				GLTypeInfo< A3 >::size,
+				GLTypeInfo< A3 >::type,
+				GLTypeInfo< A3 >::interpretation,
+				sizeof(Vertex),
+				0 + sizeof(A0) + sizeof(A1) + sizeof(A2)
+			);
+		} else if (idx == 4) {
+			return GLAttribPointer(buffer,
+				GLTypeInfo< A4 >::size,
+				GLTypeInfo< A4 >::type,
+				GLTypeInfo< A4 >::interpretation,
+				sizeof(Vertex),
+				0 + sizeof(A0) + sizeof(A1) + sizeof(A2) + sizeof(A3)
+			);
+		} else if (idx == 5) {
+			return GLAttribPointer(buffer,
+				GLTypeInfo< A5 >::size,
+				GLTypeInfo< A5 >::type,
+				GLTypeInfo< A5 >::interpretation,
+				sizeof(Vertex),
+				0 + sizeof(A0) + sizeof(A1) + sizeof(A2) + sizeof(A3) + sizeof(A4)
+			);
+		} else if (idx == 6) {
+			return GLAttribPointer(buffer,
+				GLTypeInfo< A6 >::size,
+				GLTypeInfo< A6 >::type,
+				GLTypeInfo< A6 >::interpretation,
+				sizeof(Vertex),
+				0 + sizeof(A0) + sizeof(A1) + sizeof(A2) + sizeof(A3) + sizeof(A4) + sizeof(A5)
+			);
+		} else {
+			assert(idx < 7);
+			return GLAttribPointer();
+		}
+	};
+
+	void set(GLsizei count_, Vertex const *data, GLenum usage) {
+		count = count_;
+		GLBuffer::set(GL_ARRAY_BUFFER, count_ * sizeof(Vertex), data, usage);
+	}
+	void set(std::vector< Vertex > const &data, GLenum usage) {
+		set(data.size(), &data[0], usage);
+	}
+};
+
+
 
