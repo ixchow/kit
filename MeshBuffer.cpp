@@ -111,7 +111,7 @@ MeshBuffer::MeshBuffer(std::string const &filename) {
 	{ //read index chunk, add to meshes:
 		struct IndexEntry {
 			uint32_t name_begin, name_end;
-			uint32_t vertex_start, vertex_count;
+			uint32_t vertex_begin, vertex_end;
 		};
 		static_assert(sizeof(IndexEntry) == 16, "Index entry should be packed");
 
@@ -122,13 +122,13 @@ MeshBuffer::MeshBuffer(std::string const &filename) {
 			if (!(entry.name_begin <= entry.name_end && entry.name_end <= strings.size())) {
 				throw std::runtime_error("index entry has out-of-range name begin/end");
 			}
-			if (!(entry.vertex_start < entry.vertex_start + entry.vertex_count && entry.vertex_start + entry.vertex_count <= total)) {
+			if (!(entry.vertex_begin <= entry.vertex_end && entry.vertex_end <= total)) {
 				throw std::runtime_error("index entry has out-of-range vertex start/count");
 			}
 			std::string name(&strings[0] + entry.name_begin, &strings[0] + entry.name_end);
 			Mesh mesh;
-			mesh.start = entry.vertex_start;
-			mesh.count = entry.vertex_count;
+			mesh.start = entry.vertex_begin;
+			mesh.count = entry.vertex_end - entry.vertex_begin;
 			bool inserted = meshes.insert(std::make_pair(name, mesh)).second;
 			if (!inserted) {
 				std::cerr << "WARNING: mesh name '" + name + "' in filename '" + filename + "' collides with existing mesh." << std::endl;
