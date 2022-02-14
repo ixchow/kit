@@ -2,9 +2,10 @@
 
 #based on 'export-sprites.py' and 'glsprite.py' from TCHOW Rainbow; code used is released into the public domain.
 #Patched for 15-466-f19 to remove non-pnct formats!
+#Patched for 15-466-f20 to merge data all at once (slightly faster)
 
-#Note: Script meant to be executed within blender, as per:
-#blender --background --python export-meshes.py -- <infile.blend>[:collection] <outfile.pnct>
+#Note: Script meant to be executed within blender 2.9, as per:
+#blender --background --python export-meshes.py -- [...see below...]
 
 import sys,re
 
@@ -14,7 +15,7 @@ for i in range(0,len(sys.argv)):
 		args = sys.argv[i+1:]
 
 if len(args) != 2:
-	print("\n\nUsage:\nblender --background --python export-meshes.py -- <infile.blend>[:collection] <outfile.pnct>\nExports the meshes referenced by all objects in the specified collection (default: all objects) to a binary blob.\n")
+	print("\n\nUsage:\nblender --background --python export-meshes.py -- <infile.blend[:collection]> <outfile.pnct>\nExports the meshes referenced by all objects in the specified collection(s) (default: all objects) to a binary blob.\n")
 	exit(1)
 
 import bpy
@@ -48,7 +49,9 @@ if collection_name:
 else:
 	collection = bpy.context.scene.collection
 
+
 #meshes to write:
+objs_to_write = set()
 to_write = set()
 did_collections = set()
 def add_meshes(from_collection):
@@ -58,17 +61,27 @@ def add_meshes(from_collection):
 		return
 	did_collections.add(from_collection)
 
+	if from_collection.name[0] == '_':
+		print("Skipping collection '" + from_collection.name + "' because its name starts with an underscore.")
+		return
+
 	for obj in from_collection.objects:
 		if obj.type == 'MESH':
-			to_write.add(obj.data)
+			if obj.data.name[0] == '_':
+				print("Skipping mesh '" + obj.data.name + "' because its name starts with an underscore.")
+			else:
+				if obj.data in to_write:
+					print("Note: multiple objects reference mesh '" + obj.data.name + "'; will write through only one.")
+				else:
+					to_write.add(obj.data)
+					objs_to_write.add(obj)
 		if obj.instance_collection:
 			add_meshes(obj.instance_collection)
 	for child in from_collection.children:
 		add_meshes(child)
 
 add_meshes(collection)
-
-print("Added meshes from: ", did_collections)
+#print("Added meshes from: ", did_collections)
 
 #set all collections visible: (so that meshes can be selected for triangulation)
 def set_visible(layer_collection):
@@ -91,7 +104,8 @@ index = b''
 
 vertex_count = 0
 for obj in bpy.data.objects:
-	if obj.data in to_write:
+	if obj in objs_to_write:
+		objs_to_write.remove(obj)
 		to_write.remove(obj.data)
 	else:
 		continue
@@ -100,7 +114,7 @@ for obj in bpy.data.objects:
 	mesh = obj.data
 	name = mesh.name
 
-	print("Writing '" + name + "'...")
+	print("Writing '" + name + "' (via '" + obj.name +"')...")
 
 	if bpy.context.object:
 		bpy.ops.object.mode_set(mode='OBJECT') #get out of edit mode (just in case)
@@ -113,14 +127,20 @@ for obj in bpy.data.objects:
 
 	#print(obj.visible_get()) #DEBUG
 
+	#print("   modifiers..."); #DEBUG
+
 	#apply all modifiers (?):
 	bpy.ops.object.convert(target='MESH')
+
+	#print("   triangulate..."); #DEBUG
 
 	#subdivide object's mesh into triangles:
 	bpy.ops.object.mode_set(mode='EDIT')
 	bpy.ops.mesh.select_all(action='SELECT')
 	bpy.ops.mesh.quads_convert_to_tris(quad_method='BEAUTY', ngon_method='BEAUTY')
 	bpy.ops.object.mode_set(mode='OBJECT')
+
+	#print("   normals..."); #DEBUG
 
 	#compute normals (respecting face smoothing):
 	mesh.calc_normals_split()
@@ -140,14 +160,20 @@ for obj in bpy.data.objects:
 		print("WARNING: trying to export color data, but object '" + name + "' does not have color data; will output 0xffffffff")
 	else:
 		colors = obj.data.vertex_colors.active.data
+		if len(obj.data.vertex_colors) != 1:
+			print("WARNING: object '" + name + "' has multiple vertex color layers; only exporting '" + obj.data.vertex_colors.active.name + "'")
 
 	uvs = None
 	if len(obj.data.uv_layers) == 0:
 		print("WARNING: trying to export texcoord data, but object '" + name + "' does not uv data; will output (0.0, 0.0)")
 	else:
 		uvs = obj.data.uv_layers.active.data
+		if len(obj.data.uv_layers) != 1:
+			print("WARNING: object '" + name + "' has multiple texture coordinate layers; only exporting '" + obj.data.uv_layers.active.name + "'")
 
 	local_data = b''
+
+	#print("   polygons (" + str(len(mesh.polygons)) + ")..."); #DEBUG
 
 	#write the mesh triangles:
 	for poly in mesh.polygons:
@@ -162,7 +188,7 @@ for obj in bpy.data.objects:
 				local_data += struct.pack('f', x)
 			if colors != None:
 				col = colors[poly.loop_indices[i]].color
-				local_data += struct.pack('BBBB', int(col[0] * 255), int(col[1] * 255), int(col[2] * 255), int(col[3] * 255))
+				local_data += struct.pack('BBBB', int(col[0] * 255), int(col[1] * 255), int(col[2] * 255), 255)
 			else:
 				local_data += struct.pack('BBBB', 255, 255, 255, 255)
 			if uvs != None:
@@ -182,7 +208,7 @@ for obj in bpy.data.objects:
 data = b''.join(data)
 
 #check that code created as much data as anticipated:
-assert(vertex_count * (4*3+4*3+4*1+4*2) == len(data))
+assert(vertex_count * (4*3+4*3+1*4+4*2) == len(data))
 
 #write the data chunk and index chunk to an output blob:
 blob = open(outfile, 'wb')
