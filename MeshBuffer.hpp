@@ -25,6 +25,7 @@ struct MeshBuffer {
 	//look up a particular mesh in the DB:
 	// note: will throw if mesh not found.
 	struct Mesh {
+		GLuint type = GL_TRIANGLES;
 		GLuint start = 0;
 		GLuint count = 0;
 	};

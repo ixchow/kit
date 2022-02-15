@@ -127,6 +127,7 @@ MeshBuffer::MeshBuffer(std::string const &filename) {
 			}
 			std::string name(&strings[0] + entry.name_begin, &strings[0] + entry.name_end);
 			Mesh mesh;
+			mesh.type = GL_TRIANGLES;
 			mesh.start = entry.vertex_begin;
 			mesh.count = entry.vertex_end - entry.vertex_begin;
 			bool inserted = meshes.insert(std::make_pair(name, mesh)).second;
