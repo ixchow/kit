@@ -27,6 +27,7 @@ if $(OS) = NT {
 }
 
 if $(OS) = MACOSX {
+	CCFLAGS = $(C++FLAGS) ;
 	NAMES += kit-SDL2-osx.mm ;
 }
 
