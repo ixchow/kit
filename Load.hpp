@@ -25,6 +25,7 @@
 
 #include <functional>
 #include <stdexcept>
+#include <cstdint>
 
 namespace kit {
 
