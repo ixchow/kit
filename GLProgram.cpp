@@ -5,9 +5,11 @@
 
 GLShader::GLShader( GLenum type, std::string const &source ) {
 	shader = glCreateShader(type);
-	GLchar const *str = source.c_str();
-	GLint length = source.size();
-	glShaderSource(shader, 1, &str, &length);
+	{
+		GLchar const *str = source.c_str();
+		GLint length = source.size();
+		glShaderSource(shader, 1, &str, &length);
+	}
 	glCompileShader(shader);
 	GLint compile_status = GL_FALSE;
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &compile_status);
@@ -44,8 +46,8 @@ GLProgram::GLProgram( std::initializer_list< GLShader const * > shaders ) {
 	}
 }
 
-void GLProgram::DEBUG_dump_info(std::string const &name) {
-	std::cout << " ------ Shader Program '" << name << "' -----\n";
+void GLProgram::DEBUG_dump_info(std::string const &name_) {
+	std::cout << " ------ Shader Program '" << name_ << "' -----\n";
 	{
 		GLint active = 0;
 		glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &active);

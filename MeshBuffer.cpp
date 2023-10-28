@@ -23,82 +23,82 @@ MeshBuffer::MeshBuffer(std::string const &filename) {
 	GLuint total = 0;
 	//read + upload data chunk:
 	if (endswith(".p") || endswith(".pl")) {
-		GLAttribBuffer< glm::vec3 > buffer;
-		std::vector< decltype(buffer)::Vertex > data;
+		GLAttribBuffer< glm::vec3 > buffer_;
+		std::vector< decltype(buffer_)::Vertex > data;
 		read_chunk(file, "p...", &data);
 
 		//upload data:
-		buffer.set(data, GL_STATIC_DRAW);
+		buffer_.set(data, GL_STATIC_DRAW);
 
 		total = data.size(); //store total for later checks on index
 
 		//store attrib locations:
-		Position = buffer[0];
+		Position = buffer_[0];
 
-		this->buffer = std::move(buffer);
+		this->buffer = std::move(buffer_);
 	} else if (endswith(".pn")) {
-		GLAttribBuffer< glm::vec3, glm::vec3 > buffer;
-		std::vector< decltype(buffer)::Vertex > data;
+		GLAttribBuffer< glm::vec3, glm::vec3 > buffer_;
+		std::vector< decltype(buffer_)::Vertex > data;
 		read_chunk(file, "pn..", &data);
 
 		//upload data:
-		buffer.set(data, GL_STATIC_DRAW);
+		buffer_.set(data, GL_STATIC_DRAW);
 
 		total = data.size(); //store total for later checks on index
 
 		//store attrib locations:
-		Position = buffer[0];
-		Normal = buffer[1];
+		Position = buffer_[0];
+		Normal = buffer_[1];
 
-		this->buffer = std::move(buffer);
+		this->buffer = std::move(buffer_);
 	} else if (endswith(".pc")) {
-		GLAttribBuffer< glm::vec3, glm::u8vec4 > buffer;
-		std::vector< decltype(buffer)::Vertex > data;
+		GLAttribBuffer< glm::vec3, glm::u8vec4 > buffer_;
+		std::vector< decltype(buffer_)::Vertex > data;
 		read_chunk(file, "pc..", &data);
 
 		//upload data:
-		buffer.set(data, GL_STATIC_DRAW);
+		buffer_.set(data, GL_STATIC_DRAW);
 
 		total = data.size(); //store total for later checks on index
 
 		//store attrib locations:
-		Position = buffer[0];
-		Color = buffer[1];
+		Position = buffer_[0];
+		Color = buffer_[1];
 
-		this->buffer = std::move(buffer);
+		this->buffer = std::move(buffer_);
 	} else if (endswith(".pnc")) {
-		GLAttribBuffer< glm::vec3, glm::vec3, glm::u8vec4 > buffer;
-		std::vector< decltype(buffer)::Vertex > data;
+		GLAttribBuffer< glm::vec3, glm::vec3, glm::u8vec4 > buffer_;
+		std::vector< decltype(buffer_)::Vertex > data;
 		read_chunk(file, "pnc.", &data);
 
 		//upload data:
-		buffer.set(data, GL_STATIC_DRAW);
+		buffer_.set(data, GL_STATIC_DRAW);
 
 		total = data.size(); //store total for later checks on index
 
 		//store attrib locations:
-		Position = buffer[0];
-		Normal = buffer[1];
-		Color = buffer[2];
+		Position = buffer_[0];
+		Normal = buffer_[1];
+		Color = buffer_[2];
 
-		this->buffer = std::move(buffer);
+		this->buffer = std::move(buffer_);
 	} else if (endswith(".pnct")) {
-		GLAttribBuffer< glm::vec3, glm::vec3, glm::u8vec4, glm::vec2 > buffer;
-		std::vector< decltype(buffer)::Vertex > data;
+		GLAttribBuffer< glm::vec3, glm::vec3, glm::u8vec4, glm::vec2 > buffer_;
+		std::vector< decltype(buffer_)::Vertex > data;
 		read_chunk(file, "pnct", &data);
 
 		//upload data:
-		buffer.set(data, GL_STATIC_DRAW);
+		buffer_.set(data, GL_STATIC_DRAW);
 
 		total = data.size(); //store total for later checks on index
 
 		//store attrib locations:
-		Position = buffer[0];
-		Normal = buffer[1];
-		Color = buffer[2];
-		TexCoord = buffer[3];
+		Position = buffer_[0];
+		Normal = buffer_[1];
+		Color = buffer_[2];
+		TexCoord = buffer_[3];
 
-		this->buffer = std::move(buffer);
+		this->buffer = std::move(buffer_);
 	} else {
 		throw std::runtime_error("Unknown file type '" + filename + "'");
 	}
