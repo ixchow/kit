@@ -8,6 +8,7 @@
 #undef max
 #undef min
 #undef near
+#undef DO
 #else
 #define GL_GLEXT_PROTOTYPES 1
 #include "glcorearb.h"
