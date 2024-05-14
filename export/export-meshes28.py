@@ -14,8 +14,8 @@ for i in range(0,len(sys.argv)):
 	if sys.argv[i] == '--':
 		args = sys.argv[i+1:]
 
-if len(args) != 2:
-	print("\n\nUsage:\nblender --background --python export-meshes.py -- <infile.blend[:collection]> <outfile.pnct>\nExports the meshes referenced by all objects in the specified collection(s) (default: all objects) to a binary blob.\n")
+if len(args) < 2 or len(args) > 3:
+	print("\n\nUsage:\nblender --background --python export-meshes.py -- <infile.blend[:collection]> <outfile.pnct> [--skip-underscore]\nExports the meshes referenced by all objects in the specified collection(s) (default: all objects) to a binary blob.\n")
 	exit(1)
 
 import bpy
@@ -27,8 +27,54 @@ if m:
 	infile = m.group(1)
 	collection_name = m.group(2)
 outfile = args[1]
+skip_underscore = False
+if len(args) > 2:
+	if args[2] == '--skip-underscore':
+		skip_underscore = True
+	else:
+		print("Unrecognized argument: " + args[2])
 
-assert outfile.endswith(".pnct")
+
+class FileType:
+	def __init__(self, magic, as_lines = False):
+		self.magic = magic
+		self.position = (b"p" in magic)
+		self.normal = (b"n" in magic)
+		self.color = (b"c" in magic)
+		self.texcoord = (b"t" in magic)
+		self.as_lines = as_lines
+		self.vertex_bytes = 0
+		if self.position: self.vertex_bytes += 3 * 4
+		if self.normal: self.vertex_bytes += 3 * 4
+		if self.color: self.vertex_bytes += 4
+		if self.texcoord: self.vertex_bytes += 2 * 4
+
+filetypes = {
+	".p" : FileType(b"p..."),
+	".pl" : FileType(b"p...", True),
+	".pn" : FileType(b"pn.."),
+	".pc" : FileType(b"pc.."),
+	".pt" : FileType(b"pt.."),
+	".pnc" : FileType(b"pnc."),
+	".pct" : FileType(b"pct."),
+	".pnt" : FileType(b"pnt."),
+	".pnct" : FileType(b"pnct"),
+}
+
+filetype = None
+for kv in filetypes.items():
+	if outfile.endswith(kv[0]):
+		assert(filetype == None)
+		filetype = kv[1]
+
+if filetype == None:
+	print("ERROR: please name outfile with one of:")
+	for k in filetypes.keys():
+		print("\t\"" + k + "\"")
+	exit(1)
+
+#TODO: support as_lines export
+assert not filetype.as_lines
 
 print("Will export meshes referenced from ",end="")
 if collection_name:
@@ -61,13 +107,13 @@ def add_meshes(from_collection):
 		return
 	did_collections.add(from_collection)
 
-	if from_collection.name[0] == '_':
+	if skip_underscore and from_collection.name[0] == '_':
 		print("Skipping collection '" + from_collection.name + "' because its name starts with an underscore.")
 		return
 
 	for obj in from_collection.objects:
 		if obj.type == 'MESH':
-			if obj.data.name[0] == '_':
+			if skip_underscore and obj.data.name[0] == '_':
 				print("Skipping mesh '" + obj.data.name + "' because its name starts with an underscore.")
 			else:
 				if obj.data in to_write:
@@ -156,20 +202,22 @@ for obj in bpy.data.objects:
 	#...count will be written below
 
 	colors = None
-	if len(obj.data.vertex_colors) == 0:
-		print("WARNING: trying to export color data, but object '" + name + "' does not have color data; will output 0xffffffff")
-	else:
-		colors = obj.data.vertex_colors.active.data
-		if len(obj.data.vertex_colors) != 1:
-			print("WARNING: object '" + name + "' has multiple vertex color layers; only exporting '" + obj.data.vertex_colors.active.name + "'")
+	if filetype.color:
+		if len(obj.data.vertex_colors) == 0:
+			print("WARNING: trying to export color data, but object '" + name + "' does not have color data; will output 0xffffffff")
+		else:
+			colors = obj.data.vertex_colors.active.data
+			if len(obj.data.vertex_colors) != 1:
+				print("WARNING: object '" + name + "' has multiple vertex color layers; only exporting '" + obj.data.vertex_colors.active.name + "'")
 
 	uvs = None
-	if len(obj.data.uv_layers) == 0:
-		print("WARNING: trying to export texcoord data, but object '" + name + "' does not uv data; will output (0.0, 0.0)")
-	else:
-		uvs = obj.data.uv_layers.active.data
-		if len(obj.data.uv_layers) != 1:
-			print("WARNING: object '" + name + "' has multiple texture coordinate layers; only exporting '" + obj.data.uv_layers.active.name + "'")
+	if filetype.texcoord:
+		if len(obj.data.uv_layers) == 0:
+			print("WARNING: trying to export texcoord data, but object '" + name + "' does not uv data; will output (0.0, 0.0)")
+		else:
+			uvs = obj.data.uv_layers.active.data
+			if len(obj.data.uv_layers) != 1:
+				print("WARNING: object '" + name + "' has multiple texture coordinate layers; only exporting '" + obj.data.uv_layers.active.name + "'")
 
 	local_data = b''
 
@@ -184,18 +232,21 @@ for obj in bpy.data.objects:
 			vertex = mesh.vertices[loop.vertex_index]
 			for x in vertex.co:
 				local_data += struct.pack('f', x)
-			for x in loop.normal:
-				local_data += struct.pack('f', x)
-			if colors != None:
-				col = colors[poly.loop_indices[i]].color
-				local_data += struct.pack('BBBB', int(col[0] * 255), int(col[1] * 255), int(col[2] * 255), 255)
-			else:
-				local_data += struct.pack('BBBB', 255, 255, 255, 255)
-			if uvs != None:
-				uv = uvs[poly.loop_indices[i]].uv
-				local_data += struct.pack('ff', uv.x, uv.y)
-			else:
-				local_data += struct.pack('ff', 0, 0)
+			if filetype.normal:
+				for x in loop.normal:
+					local_data += struct.pack('f', x)
+			if filetype.color:
+				if colors != None:
+					col = colors[poly.loop_indices[i]].color
+					local_data += struct.pack('BBBB', int(col[0] * 255), int(col[1] * 255), int(col[2] * 255), 255)
+				else:
+					local_data += struct.pack('BBBB', 255, 255, 255, 255)
+			if filetype.texcoord:
+				if uvs != None:
+					uv = uvs[poly.loop_indices[i]].uv
+					local_data += struct.pack('ff', uv.x, uv.y)
+				else:
+					local_data += struct.pack('ff', 0, 0)
 		if len(local_data) > 1000:
 			data.append(local_data)
 			local_data = b''
@@ -208,12 +259,12 @@ for obj in bpy.data.objects:
 data = b''.join(data)
 
 #check that code created as much data as anticipated:
-assert(vertex_count * (4*3+4*3+1*4+4*2) == len(data))
+assert(vertex_count * filetype.vertex_bytes == len(data))
 
 #write the data chunk and index chunk to an output blob:
 blob = open(outfile, 'wb')
 #first chunk: the data
-blob.write(struct.pack('4s',b'pnct')) #type
+blob.write(struct.pack('4s',filetype.magic)) #type
 blob.write(struct.pack('I', len(data))) #length
 blob.write(data)
 #second chunk: the strings
