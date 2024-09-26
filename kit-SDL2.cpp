@@ -188,6 +188,8 @@ int main(int argc, char **argv) {
 			while (SDL_PollEvent(&evt) == 1 && mode) {
 				#ifdef KIT_RAW_SDL_EVENTS
 				mode->handle_event(evt);
+				kit::commit_mode();
+				if (mode == nullptr) break;
 				#endif
 
 				//Pointer events are handled by kit-SDL2-osx.mm on OSX
@@ -208,6 +210,7 @@ int main(int argc, char **argv) {
 					;
 					new_state.pressure = (new_state.buttons ? 1.0f : 0.0f);
 					kit::dispatch_pointer_action(MouseID, kit::PointerEnter, new_state);
+					kit::commit_mode();
 				} else if (evt.type == SDL_WINDOWEVENT && evt.window.event == SDL_WINDOWEVENT_LEAVE) {
 					//std::cout << "Mouse Leave." << std::endl; //DEBUG
 					kit::Pointer new_state;
@@ -222,6 +225,7 @@ int main(int argc, char **argv) {
 					;
 					new_state.pressure = (new_state.buttons ? 1.0f : 0.0f);
 					kit::dispatch_pointer_action(MouseID, kit::PointerLeave, new_state);
+					kit::commit_mode();
 				} else if (evt.type == SDL_MOUSEMOTION) {
 					kit::Pointer new_state;
 					new_state.at.x = MAPX(evt.motion.x);
@@ -233,6 +237,7 @@ int main(int argc, char **argv) {
 					;
 					new_state.pressure = (new_state.buttons ? 1.0f : 0.0f);
 					kit::dispatch_pointer_action(MouseID, kit::PointerMove, new_state);
+					kit::commit_mode();
 				} else if (evt.type == SDL_MOUSEBUTTONDOWN || evt.type == SDL_MOUSEBUTTONUP) {
 					kit::Pointer new_state;
 					new_state.at.x = MAPX(evt.motion.x);
@@ -246,16 +251,19 @@ int main(int argc, char **argv) {
 					;
 					new_state.pressure = (new_state.buttons ? 1.0f : 0.0f);
 					kit::dispatch_pointer_action(MouseID, (evt.type == SDL_MOUSEBUTTONDOWN ? kit::PointerDown : kit::PointerUp), new_state);
+					kit::commit_mode();
 				}
 				#endif // __APPLE__
 				if (evt.type == SDL_KEYDOWN || evt.type == SDL_KEYUP) {
 					if (evt.key.repeat == 0) {
 						kit::Button::handle_event(evt);
+						kit::commit_mode();
 					}
 				}
 				//exit not-so-gracefully on a "quit" message:
 				if (evt.type == SDL_QUIT) {
 					kit::set_mode( nullptr );
+					kit::commit_mode();
 				}
 			}
 		}

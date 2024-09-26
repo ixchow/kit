@@ -23,82 +23,82 @@ MeshBuffer::MeshBuffer(std::string const &filename) {
 	GLuint total = 0;
 	//read + upload data chunk:
 	if (endswith(".p") || endswith(".pl")) {
-		GLAttribBuffer< glm::vec3 > buffer;
-		std::vector< decltype(buffer)::Vertex > data;
+		GLAttribBuffer< glm::vec3 > buffer_;
+		std::vector< decltype(buffer_)::Vertex > data;
 		read_chunk(file, "p...", &data);
 
 		//upload data:
-		buffer.set(data, GL_STATIC_DRAW);
+		buffer_.set(data, GL_STATIC_DRAW);
 
 		total = data.size(); //store total for later checks on index
 
 		//store attrib locations:
-		Position = buffer[0];
+		Position = buffer_[0];
 
-		this->buffer = std::move(buffer);
+		this->buffer = std::move(buffer_);
 	} else if (endswith(".pn")) {
-		GLAttribBuffer< glm::vec3, glm::vec3 > buffer;
-		std::vector< decltype(buffer)::Vertex > data;
+		GLAttribBuffer< glm::vec3, glm::vec3 > buffer_;
+		std::vector< decltype(buffer_)::Vertex > data;
 		read_chunk(file, "pn..", &data);
 
 		//upload data:
-		buffer.set(data, GL_STATIC_DRAW);
+		buffer_.set(data, GL_STATIC_DRAW);
 
 		total = data.size(); //store total for later checks on index
 
 		//store attrib locations:
-		Position = buffer[0];
-		Normal = buffer[1];
+		Position = buffer_[0];
+		Normal = buffer_[1];
 
-		this->buffer = std::move(buffer);
+		this->buffer = std::move(buffer_);
 	} else if (endswith(".pc")) {
-		GLAttribBuffer< glm::vec3, glm::u8vec4 > buffer;
-		std::vector< decltype(buffer)::Vertex > data;
+		GLAttribBuffer< glm::vec3, glm::u8vec4 > buffer_;
+		std::vector< decltype(buffer_)::Vertex > data;
 		read_chunk(file, "pc..", &data);
 
 		//upload data:
-		buffer.set(data, GL_STATIC_DRAW);
+		buffer_.set(data, GL_STATIC_DRAW);
 
 		total = data.size(); //store total for later checks on index
 
 		//store attrib locations:
-		Position = buffer[0];
-		Color = buffer[1];
+		Position = buffer_[0];
+		Color = buffer_[1];
 
-		this->buffer = std::move(buffer);
+		this->buffer = std::move(buffer_);
 	} else if (endswith(".pnc")) {
-		GLAttribBuffer< glm::vec3, glm::vec3, glm::u8vec4 > buffer;
-		std::vector< decltype(buffer)::Vertex > data;
+		GLAttribBuffer< glm::vec3, glm::vec3, glm::u8vec4 > buffer_;
+		std::vector< decltype(buffer_)::Vertex > data;
 		read_chunk(file, "pnc.", &data);
 
 		//upload data:
-		buffer.set(data, GL_STATIC_DRAW);
+		buffer_.set(data, GL_STATIC_DRAW);
 
 		total = data.size(); //store total for later checks on index
 
 		//store attrib locations:
-		Position = buffer[0];
-		Normal = buffer[1];
-		Color = buffer[2];
+		Position = buffer_[0];
+		Normal = buffer_[1];
+		Color = buffer_[2];
 
-		this->buffer = std::move(buffer);
+		this->buffer = std::move(buffer_);
 	} else if (endswith(".pnct")) {
-		GLAttribBuffer< glm::vec3, glm::vec3, glm::u8vec4, glm::vec2 > buffer;
-		std::vector< decltype(buffer)::Vertex > data;
+		GLAttribBuffer< glm::vec3, glm::vec3, glm::u8vec4, glm::vec2 > buffer_;
+		std::vector< decltype(buffer_)::Vertex > data;
 		read_chunk(file, "pnct", &data);
 
 		//upload data:
-		buffer.set(data, GL_STATIC_DRAW);
+		buffer_.set(data, GL_STATIC_DRAW);
 
 		total = data.size(); //store total for later checks on index
 
 		//store attrib locations:
-		Position = buffer[0];
-		Normal = buffer[1];
-		Color = buffer[2];
-		TexCoord = buffer[3];
+		Position = buffer_[0];
+		Normal = buffer_[1];
+		Color = buffer_[2];
+		TexCoord = buffer_[3];
 
-		this->buffer = std::move(buffer);
+		this->buffer = std::move(buffer_);
 	} else {
 		throw std::runtime_error("Unknown file type '" + filename + "'");
 	}
@@ -111,7 +111,7 @@ MeshBuffer::MeshBuffer(std::string const &filename) {
 	{ //read index chunk, add to meshes:
 		struct IndexEntry {
 			uint32_t name_begin, name_end;
-			uint32_t vertex_start, vertex_count;
+			uint32_t vertex_begin, vertex_end;
 		};
 		static_assert(sizeof(IndexEntry) == 16, "Index entry should be packed");
 
@@ -122,13 +122,14 @@ MeshBuffer::MeshBuffer(std::string const &filename) {
 			if (!(entry.name_begin <= entry.name_end && entry.name_end <= strings.size())) {
 				throw std::runtime_error("index entry has out-of-range name begin/end");
 			}
-			if (!(entry.vertex_start < entry.vertex_start + entry.vertex_count && entry.vertex_start + entry.vertex_count <= total)) {
+			if (!(entry.vertex_begin <= entry.vertex_end && entry.vertex_end <= total)) {
 				throw std::runtime_error("index entry has out-of-range vertex start/count");
 			}
 			std::string name(&strings[0] + entry.name_begin, &strings[0] + entry.name_end);
 			Mesh mesh;
-			mesh.start = entry.vertex_start;
-			mesh.count = entry.vertex_count;
+			mesh.type = GL_TRIANGLES;
+			mesh.start = entry.vertex_begin;
+			mesh.count = entry.vertex_end - entry.vertex_begin;
 			bool inserted = meshes.insert(std::make_pair(name, mesh)).second;
 			if (!inserted) {
 				std::cerr << "WARNING: mesh name '" + name + "' in filename '" + filename + "' collides with existing mesh." << std::endl;
