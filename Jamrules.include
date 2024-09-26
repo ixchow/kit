@@ -154,6 +154,7 @@ if $(OS) = NT {
 	C++ = g++ ;
 	C++FLAGS =
 		-std=c++17 -g -Wall -Werror
+		-Wno-dangling-reference
 		-I$(KIT_LIBS)/libpng/include                           #libpng
 		-DGLM_ENABLE_EXPERIMENTAL
 		-I$(KIT_LIBS)/glm/include                              #glm
