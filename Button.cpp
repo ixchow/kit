@@ -1,6 +1,6 @@
 #include "Button.hpp"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 #include <list>
 #include <map>
@@ -14,7 +14,7 @@ struct ButtonInternal : public Button {
 };
 
 struct ButtonList : std::list< ButtonInternal > {
-	std::multimap< int, ButtonInternal * > by_scancode;
+	std::multimap< int, ButtonInternal * > by_keycode;
 	std::map< std::string, ButtonInternal * > by_name;
 	static ButtonList &instance() {
 		static ButtonList list;
@@ -32,7 +32,7 @@ Button const *Button::create(std::string const &name, Config const &config) {
 	list.back().config = config;
 
 	list.by_name.insert(std::make_pair(name, &list.back()));
-	list.by_scancode.insert(std::make_pair(config.scancode, &list.back()));
+	list.by_keycode.insert(std::make_pair(config.keycode, &list.back()));
 
 	return &list.back();
 }
@@ -47,15 +47,15 @@ void Button::clear_events() {
 
 void Button::handle_event(SDL_Event const &evt) {
 	static ButtonList &list = ButtonList::instance();
-	if ((evt.type == SDL_KEYDOWN || evt.type == SDL_KEYUP) && evt.key.repeat == 0) {
-		auto r = list.by_scancode.equal_range(evt.key.keysym.scancode);
+	if ((evt.type == SDL_EVENT_KEY_DOWN || evt.type == SDL_EVENT_KEY_UP) && evt.key.repeat == 0) {
+		auto r = list.by_keycode.equal_range(evt.key.key);
 		for (auto bi = r.first; bi != r.second; ++bi) {
-			if (evt.type == SDL_KEYDOWN) {
+			if (evt.type == SDL_EVENT_KEY_DOWN) {
 				bi->second->downs += 1;
 			} else {
 				bi->second->ups += 1;
 			}
-			bi->second->pressed = (evt.key.state == SDL_PRESSED);
+			bi->second->pressed = evt.key.down;
 		}
 	}
 }

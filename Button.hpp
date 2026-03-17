@@ -1,7 +1,5 @@
 #pragma once
 
-#include <SDL3/SDL_scancode.h>
-
 #include <string>
 #include <cstdint>
 
@@ -17,8 +15,8 @@ struct Button {
 	//Buttons are created by 'create':
 	struct Config {
 		Config() = default;
-		Config(int scancode_) : scancode(scancode_) { }
-		int scancode = -1;
+		Config(int keycode_) : keycode(keycode_) { }
+		int keycode = -1; //SDLK_* constant
 		//TODO: joystick? mouse?
 	};
 	static Button const *create(std::string const &name, Config const &config);
