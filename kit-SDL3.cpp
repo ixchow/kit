@@ -2,13 +2,14 @@
 #include "gl.hpp"
 
 #ifdef __APPLE__
-#include "kit-SDL2-osx.hpp"
+#include "kit-SDL3-osx.hpp"
 #endif
 
 #include "Button.hpp"
 
-#include <SDL.h>
-#include <SDL_syswm.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+//#include <SDL3/SDL_syswm.h>
 
 #include <iostream>
 #include <chrono>
@@ -48,24 +49,16 @@ int main(int argc, char **argv) {
 	if (kit_config.fullscreen) {
 		window = SDL_CreateWindow(
 			kit_config.title.c_str(),
-			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 			100, 100,
-			SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI
+			SDL_WINDOW_OPENGL | SDL_WINDOW_HIGH_PIXEL_DENSITY
 		);
 
-		SDL_DisplayMode want;
-		want.w = kit_config.size.x;
-		want.h = kit_config.size.y;
-		want.refresh_rate = 0;
-		want.driverdata = 0;
-		want.format = 0;
-
 		SDL_DisplayMode got;
-		if (!SDL_GetClosestDisplayMode(0, &want, &got)) {
+		if (!SDL_GetClosestFullscreenDisplayMode(0, kit_config.size.x, kit_config.size.y, 0.0f, true, &got)) {
 			throw std::runtime_error("Failed to set fullscreen mode.");
 		}
 		std::cout << "Got " << got.w << " x " << got.h << " @ " << got.refresh_rate << "Hz." << std::endl;
-		if (0 != SDL_SetWindowDisplayMode(window, &got)) {
+		if (!SDL_SetWindowFullscreenMode(window, &got)) {
 			throw std::runtime_error(std::string("Failed to set display mode: ") + SDL_GetError());
 		}
 
@@ -74,15 +67,14 @@ int main(int argc, char **argv) {
 		int w,h;
 		SDL_GetWindowSize(window, &w, &h);
 		std::cout << "Window size is " << w << "x" << h << std::endl;
-		SDL_GL_GetDrawableSize(window, &w, &h);
+		SDL_GetWindowSizeInPixels(window, &w, &h);
 		std::cout << "Drawable size is " << w << "x" << h << std::endl;
 
 	} else {
 		window = SDL_CreateWindow(
 			kit_config.title.c_str(),
-			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 			kit_config.size.x, kit_config.size.y,
-			SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI
+			SDL_WINDOW_OPENGL | SDL_WINDOW_HIGH_PIXEL_DENSITY
 			| (kit_config.resizable ? SDL_WINDOW_RESIZABLE : 0)
 		);
 	}
@@ -104,9 +96,9 @@ int main(int argc, char **argv) {
 	#endif
 
 
-	if (SDL_GL_SetSwapInterval(-1) != 0) {
+	if (!SDL_GL_SetSwapInterval(-1)) {
 		std::cerr << "NOTE: couldn't set vsync + late swap tearing (" << SDL_GetError() << ")." << std::endl;
-		if (SDL_GL_SetSwapInterval(1) != 0) {
+		if (!SDL_GL_SetSwapInterval(1)) {
 			std::cerr << "NOTE: couldn't set vsync (" << SDL_GetError() << ")." << std::endl;
 		}
 	}
@@ -124,7 +116,7 @@ int main(int argc, char **argv) {
 
 	auto update_drawable_size = [&]() {
 		int w,h;
-		SDL_GL_GetDrawableSize(window, &w, &h);
+		SDL_GetWindowSizeInPixels(window, &w, &h);
 		glm::uvec2 size = glm::uvec2(w,h);
 		if (size != kit::display.size) {
 			kit::display.size = size;
@@ -196,72 +188,72 @@ int main(int argc, char **argv) {
 				#ifndef __APPLE__
 				#define MAPX( X ) ((((X) + 0.5f) / window_size.x) * 2.0f - 1.0f)
 				#define MAPY( Y ) ((((Y) + 0.5f) / window_size.y) *-2.0f + 1.0f)
-				if (evt.type == SDL_WINDOWEVENT && evt.window.event == SDL_WINDOWEVENT_ENTER) {
+				if (evt.type == SDL_EVENT_WINDOW_MOUSE_ENTER) {
 					//std::cout << "Mouse Enter." << std::endl; //DEBUG
 					kit::Pointer new_state;
-					int x,y;
+					float x,y;
 					Uint32 buttons = SDL_GetMouseState(&x, &y);
 					new_state.at.x = MAPX(x);
 					new_state.at.y = MAPY(y);
 					new_state.buttons =
-						  ((buttons & SDL_BUTTON(SDL_BUTTON_LEFT)) ? kit::ButtonLeft : 0)
-						| ((buttons & SDL_BUTTON(SDL_BUTTON_MIDDLE)) ? kit::ButtonMiddle : 0)
-						| ((buttons & SDL_BUTTON(SDL_BUTTON_RIGHT)) ? kit::ButtonRight : 0)
+						  ((buttons & SDL_BUTTON_MASK(SDL_BUTTON_LEFT)) ? kit::ButtonLeft : 0)
+						| ((buttons & SDL_BUTTON_MASK(SDL_BUTTON_MIDDLE)) ? kit::ButtonMiddle : 0)
+						| ((buttons & SDL_BUTTON_MASK(SDL_BUTTON_RIGHT)) ? kit::ButtonRight : 0)
 					;
 					new_state.pressure = (new_state.buttons ? 1.0f : 0.0f);
 					kit::dispatch_pointer_action(MouseID, kit::PointerEnter, new_state);
 					kit::commit_mode();
-				} else if (evt.type == SDL_WINDOWEVENT && evt.window.event == SDL_WINDOWEVENT_LEAVE) {
+				} else if (evt.type == SDL_EVENT_WINDOW_MOUSE_LEAVE) {
 					//std::cout << "Mouse Leave." << std::endl; //DEBUG
 					kit::Pointer new_state;
-					int x,y;
+					float x,y;
 					Uint32 buttons = SDL_GetMouseState(&x, &y);
 					new_state.at.x = MAPX(x);
 					new_state.at.y = MAPY(y);
 					new_state.buttons =
-						  ((buttons & SDL_BUTTON(SDL_BUTTON_LEFT)) ? kit::ButtonLeft : 0)
-						| ((buttons & SDL_BUTTON(SDL_BUTTON_MIDDLE)) ? kit::ButtonMiddle : 0)
-						| ((buttons & SDL_BUTTON(SDL_BUTTON_RIGHT)) ? kit::ButtonRight : 0)
+						  ((buttons & SDL_BUTTON_MASK(SDL_BUTTON_LEFT)) ? kit::ButtonLeft : 0)
+						| ((buttons & SDL_BUTTON_MASK(SDL_BUTTON_MIDDLE)) ? kit::ButtonMiddle : 0)
+						| ((buttons & SDL_BUTTON_MASK(SDL_BUTTON_RIGHT)) ? kit::ButtonRight : 0)
 					;
 					new_state.pressure = (new_state.buttons ? 1.0f : 0.0f);
 					kit::dispatch_pointer_action(MouseID, kit::PointerLeave, new_state);
 					kit::commit_mode();
-				} else if (evt.type == SDL_MOUSEMOTION) {
+				} else if (evt.type == SDL_EVENT_MOUSE_MOTION) {
 					kit::Pointer new_state;
 					new_state.at.x = MAPX(evt.motion.x);
 					new_state.at.y = MAPY(evt.motion.y);
 					new_state.buttons =
-						  ((evt.motion.state & SDL_BUTTON(SDL_BUTTON_LEFT)) ? kit::ButtonLeft : 0)
-						| ((evt.motion.state & SDL_BUTTON(SDL_BUTTON_MIDDLE)) ? kit::ButtonMiddle : 0)
-						| ((evt.motion.state & SDL_BUTTON(SDL_BUTTON_RIGHT)) ? kit::ButtonRight : 0)
+						  ((evt.motion.state & SDL_BUTTON_MASK(SDL_BUTTON_LEFT)) ? kit::ButtonLeft : 0)
+						| ((evt.motion.state & SDL_BUTTON_MASK(SDL_BUTTON_MIDDLE)) ? kit::ButtonMiddle : 0)
+						| ((evt.motion.state & SDL_BUTTON_MASK(SDL_BUTTON_RIGHT)) ? kit::ButtonRight : 0)
 					;
 					new_state.pressure = (new_state.buttons ? 1.0f : 0.0f);
 					kit::dispatch_pointer_action(MouseID, kit::PointerMove, new_state);
 					kit::commit_mode();
-				} else if (evt.type == SDL_MOUSEBUTTONDOWN || evt.type == SDL_MOUSEBUTTONUP) {
+				} else if (evt.type == SDL_EVENT_MOUSE_BUTTON_DOWN || evt.type == SDL_EVENT_MOUSE_BUTTON_UP) {
 					kit::Pointer new_state;
 					new_state.at.x = MAPX(evt.motion.x);
 					new_state.at.y = MAPY(evt.motion.y);
-					int x,y;
+					float x,y;
 					Uint32 buttons = SDL_GetMouseState(&x, &y);
 					new_state.buttons =
-						  ((buttons & SDL_BUTTON(SDL_BUTTON_LEFT)) ? kit::ButtonLeft : 0)
-						| ((buttons & SDL_BUTTON(SDL_BUTTON_MIDDLE)) ? kit::ButtonMiddle : 0)
-						| ((buttons & SDL_BUTTON(SDL_BUTTON_RIGHT)) ? kit::ButtonRight : 0)
+						  ((buttons & SDL_BUTTON_MASK(SDL_BUTTON_LEFT)) ? kit::ButtonLeft : 0)
+						| ((buttons & SDL_BUTTON_MASK(SDL_BUTTON_MIDDLE)) ? kit::ButtonMiddle : 0)
+						| ((buttons & SDL_BUTTON_MASK(SDL_BUTTON_RIGHT)) ? kit::ButtonRight : 0)
 					;
 					new_state.pressure = (new_state.buttons ? 1.0f : 0.0f);
-					kit::dispatch_pointer_action(MouseID, (evt.type == SDL_MOUSEBUTTONDOWN ? kit::PointerDown : kit::PointerUp), new_state);
+					kit::dispatch_pointer_action(MouseID, (evt.type == SDL_EVENT_MOUSE_BUTTON_DOWN ? kit::PointerDown : kit::PointerUp), new_state);
 					kit::commit_mode();
 				}
 				#endif // __APPLE__
-				if (evt.type == SDL_KEYDOWN || evt.type == SDL_KEYUP) {
+				if (evt.type == SDL_EVENT_KEY_DOWN || evt.type == SDL_EVENT_KEY_UP) {
 					if (evt.key.repeat == 0) {
 						kit::Button::handle_event(evt);
 						kit::commit_mode();
 					}
 				}
 				//exit not-so-gracefully on a "quit" message:
-				if (evt.type == SDL_QUIT) {
+				if (evt.type == SDL_EVENT_QUIT) {
 					kit::set_mode( nullptr );
 					kit::commit_mode();
 				}
@@ -290,7 +282,7 @@ int main(int argc, char **argv) {
 	kit::osx::stop_pointer_handling();
 	#endif
 
-	SDL_GL_DeleteContext(context);
+	SDL_GL_DestroyContext(context);
 	SDL_DestroyWindow(window);
 
 #ifdef _WIN32
