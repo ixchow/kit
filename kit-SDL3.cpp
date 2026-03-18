@@ -9,7 +9,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-//#include <SDL3/SDL_syswm.h>
+#include <SDL3/SDL_video.h>
 
 #include <iostream>
 #include <chrono>
@@ -150,13 +150,12 @@ int main(int argc, char **argv) {
 
 	#ifdef __APPLE__
 	{
-		SDL_SysWMinfo info;
-		SDL_VERSION(&info.version);
-		if (!SDL_GetWindowWMInfo(window, &info)) {
+		SDL_PropertiesID props = SDL_GetWindowProperties(window);
+		void *window = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, nullptr);
+		if (!props || !window) {
 			std::cerr << "Error getting window info: " << SDL_GetError() << std::endl;
 		}
-		assert(info.subsystem == SDL_SYSWM_COCOA);
-		kit::osx::start_pointer_handling(info.info.cocoa.window);
+		kit::osx::start_pointer_handling(window);
 	}
 	#endif
 

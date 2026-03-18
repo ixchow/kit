@@ -1,4 +1,4 @@
-#include "kit-SDL2-osx.hpp"
+#include "kit-SDL3-osx.hpp"
 
 #include "kit.hpp"
 
