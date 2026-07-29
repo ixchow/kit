@@ -30,7 +30,7 @@ MeshBuffer::MeshBuffer(std::string const &filename) {
 		//upload data:
 		buffer_.set(data, GL_STATIC_DRAW);
 
-		total = data.size(); //store total for later checks on index
+		total = GLuint(data.size()); //store total for later checks on index
 
 		//store attrib locations:
 		Position = buffer_[0];
@@ -44,7 +44,7 @@ MeshBuffer::MeshBuffer(std::string const &filename) {
 		//upload data:
 		buffer_.set(data, GL_STATIC_DRAW);
 
-		total = data.size(); //store total for later checks on index
+		total = GLuint(data.size()); //store total for later checks on index
 
 		//store attrib locations:
 		Position = buffer_[0];
@@ -59,7 +59,7 @@ MeshBuffer::MeshBuffer(std::string const &filename) {
 		//upload data:
 		buffer_.set(data, GL_STATIC_DRAW);
 
-		total = data.size(); //store total for later checks on index
+		total = GLuint(data.size()); //store total for later checks on index
 
 		//store attrib locations:
 		Position = buffer_[0];
@@ -74,7 +74,7 @@ MeshBuffer::MeshBuffer(std::string const &filename) {
 		//upload data:
 		buffer_.set(data, GL_STATIC_DRAW);
 
-		total = data.size(); //store total for later checks on index
+		total = GLuint(data.size()); //store total for later checks on index
 
 		//store attrib locations:
 		Position = buffer_[0];
@@ -90,7 +90,7 @@ MeshBuffer::MeshBuffer(std::string const &filename) {
 		//upload data:
 		buffer_.set(data, GL_STATIC_DRAW);
 
-		total = data.size(); //store total for later checks on index
+		total = GLuint(data.size()); //store total for later checks on index
 
 		//store attrib locations:
 		Position = buffer_[0];

@@ -87,10 +87,10 @@ struct GLAttribBuffer< A0 > : GLBuffer {
 		GLBuffer::set(GL_ARRAY_BUFFER, count_ * sizeof(Vertex), data, usage);
 	}
 	void set(std::vector< Vertex > const &data, GLenum usage) {
-		set(data.size(), &data[0], usage);
+		set(GLsizei(data.size()), &data[0], usage);
 	}
 	void set(std::vector< A0 > const &data, GLenum usage) {
-		set(data.size(), &data[0], usage);
+		set(GLsizei(data.size()), &data[0], usage);
 	}
 
 };
@@ -137,7 +137,7 @@ struct GLAttribBuffer< A0, A1 > : GLBuffer {
 		GLBuffer::set(GL_ARRAY_BUFFER, count_ * sizeof(Vertex), data, usage);
 	}
 	void set(std::vector< Vertex > const &data, GLenum usage) {
-		set(data.size(), &data[0], usage);
+		set(GLuint(data.size()), &data[0], usage);
 	}
 };
 
@@ -192,7 +192,7 @@ struct GLAttribBuffer< A0, A1, A2 > : GLBuffer {
 		GLBuffer::set(GL_ARRAY_BUFFER, count_ * sizeof(Vertex), data, usage);
 	}
 	void set(std::vector< Vertex > const &data, GLenum usage) {
-		set(data.size(), &data[0], usage);
+		set(GLsizei(data.size()), &data[0], usage);
 	}
 };
 
@@ -256,7 +256,7 @@ struct GLAttribBuffer< A0, A1, A2, A3 > : GLBuffer {
 		GLBuffer::set(GL_ARRAY_BUFFER, count_ * sizeof(Vertex), data, usage);
 	}
 	void set(std::vector< Vertex > const &data, GLenum usage) {
-		set(data.size(), &data[0], usage);
+		set(GLsizei(data.size()), &data[0], usage);
 	}
 };
 
